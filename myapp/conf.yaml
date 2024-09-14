@@ -1,0 +1,131 @@
+gpu_id : 3
+
+
+ai_classification_path : ../8.AI_classification/model_v1/
+ai_classification_num_class : 5
+ai_classification_problem_type : multi_label_classification
+ai_classification_input_sz : 112
+ai_classification_mem : 550
+
+forgery_detection_b_image : ./myapp/resource/forgery/S-008607x1000.jpg
+forgery_detection_mem : 700
+forgery_detection_pitch_size : 1024
+forgery_detection_threshold : 0.90
+forgery_detection_path : ./myapp/resource/forgery/last.pt
+
+
+warning_light_detection_mem : 700
+warning_light_detection_input_size : 640
+warning_light_detection_threshold : 0.8
+warning_light_detection_path : ./myapp/resource/0_warning_light/best.pt
+warning_light_detection_class_num : 43
+
+super_resolution_mem : 1500
+super_resolution_tile_pad : 10
+super_resolution_pre_pad : 10
+super_resolution_outscale : 8
+super_resolution_tile : 200
+super_resolution_netscale : 4
+super_resolution_path : ./myapp/resource/SR/RealESRGAN_x4plus.pth
+super_resolution_mode: 0
+
+
+#-----
+ai_meeting_mem : 10244
+ai_meeting_temp_path : "./temp/results/ai_meeting_results/"
+ai_meeting_output_encoding : "utf8"
+ai_meeting_ffmpeg_file : "ffmpeg"
+ai_meeting_vad_dir : "../2.tingjian/silero-vad-master/"
+ai_meeting_whisper_model_name : "large-v3"
+ai_meeting_asr_model_path : "../2.tingjian/models/"
+ai_meeting_language : "en"
+ai_meeting_supported_sampling_rate : 16000
+#拼长时/秒，默认最优20s
+ai_meeting_min_combine_sents_sec : 20
+# 最大解码次数，debug使用，99999,无需修改
+ai_meeting_max_decode : 999999
+#是否输出原始转写结果，0关，1开
+ai_meeting_if_write_asr: 1
+# 转写模型写结果的时间间隔，默认20
+ai_meeting_transcribe_gap : 40
+# beam_size
+ai_meeting_beam_size: 4
+# 是否贪心解码
+ai_meeting_if_greedy: 0
+
+
+#---------------
+
+#是否开启说话人分离，0关，1开
+ai_meeting_if_msdp : 1
+#说话人数目，打开后需要指定,大于1生效，其余不生效
+ai_meeting_n_speakers : 3
+# 分离配置文件路径，无需修改
+ai_meeting_manifest_file : "./myapp/resource/ai_meeting/manifest.json"
+#是否输出分离结果，0关，1开
+ai_meeting_if_write_msdp: 1
+ai_meeting_diar_infer_meeting_cfg : "./myapp/resource/ai_meeting/diar_infer_meeting.yaml"
+ai_meeting_file_cluster : "/speaker_outputs/subsegments_scale5_cluster.label"
+ai_meeting_output_dia : "./output_dia/"
+#-------------------
+
+
+# summary
+#是否开启大模型摘要
+ai_meeting_if_summary: 1
+
+ai_meeting_chatbot_url : "http://localhost:8501/inference"
+
+# 大模型目录
+ai_meeting_llm_path : "/home/tione/notebook/hubo/llms/Qwen1.5-14B-Chat/"
+# 每多少秒的音频做一次摘要 discard!!!
+ai_meeting_vad_context_sec : 300
+#英文摘要prompt
+ai_meeting_prompt_en_summarize : "generate minute from this meeting transcript: "
+#中文摘要prompt
+ai_meeting_prompt_cn_summarize : "给以下文字生成摘要： "
+#中文加标点prompt
+ai_meeting_prompt_zh_punctuation : "给以下文字添加标点："
+#最大token数
+ai_meeting_max_tokens: 32768
+#是否写入摘要结果
+ai_meeting_if_write_summary: 1
+#是否写入说话人摘要结果
+ai_meeting_if_write_dia_summary: 1
+
+
+
+online_asr_model_en : "./myapp/resource/online_asr/models/vosk-model-small-en-us-0.15/"
+online_asr_model_cn : "./myapp/resource/online_asr/models/vosk-model-cn-0.22/"
+online_asr_model_de : "./myapp/resource/online_asr/models/vosk-model-small-de-0.15/"
+online_asr_sample_rate : 16000
+online_asr_mem : 1
+
+
+tts_en_mem : 700
+
+tts_cn_mem : 600
+
+translation_mem : 2400
+
+
+video_generation_mem : 10000
+video_generation_t5_device : 2
+video_generation_vae_device : 2
+video_generation_sd_device : 3
+
+
+realtime_asr_whisper_model_name: "small"
+realtime_asr_min_combine_sents_sec: 10
+realtime_asr_model_sample : 16000
+realtime_asr_gap_ms : 100
+
+sam2_device_id : 3
+sam2_video_dir : "/home/tione/notebook/lskong2/projects/AI_Server_V3/temp/results/sam2/"
+sam2_checkpoint : "/home/tione/notebook/lskong2/projects/AI_Server_V3/myapp/weights/sam2_hiera_base_plus.pt"
+sam2_model_cfg : "sam2_hiera_b_plus.yaml"
+sam2_vis_frame_stride : 30
+
+
+
+
