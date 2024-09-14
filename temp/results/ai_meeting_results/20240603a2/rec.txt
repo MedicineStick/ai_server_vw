@@ -1,0 +1,90 @@
+start: 0.0 end: 30.868000000000002
+ And then I think that's it. It's probably a story line like this. And then, I will talk to Tencent later, let them find their own industrial expert, and talk about starting from a logistics company. Their direction is mainly those. But I think it should be a deep story. And then you don't... There can be... What do you say? That is to say, some relatively... Let me give you an example. In the last company,
+
+start: 28.808 end: 61.388
+ there was something similar. You may not know about it. For example, in the car engine, we are talking about GPU, right? In the car engine, it talks about the chip, it should be called DMIPS. What does that mean? Is that the CPU's power? There are TOPS, DMIPS, which is the power of the car engine. Then,
+
+start: 58.548 end: 92.588
+ there is a pre-controller on the car, right? There is SOC. If you talk about it like that, it's easy to make people not know what you are doing. And then, he will tear the SOC into a house. The bottom layer is the component layer. There will be something in the component layer. It is like the base of a house. The core building of a house is an Android environment. It will divide the Android environment, the Linux environment, and the QNX environment.
+
+start: 89.988 end: 121.24799999999999
+ Of course, there is a hypervisor to support it. But if you talk about it like that, some people will understand, and some people will not. The hypervisor is similar to when you start to build a house, you will divide the house into Android and Linux. When you talk about it, you need to put some basic principles into it. So, when you are doing PPT, you need to have something similar.
+
+start: 119.928 end: 150.54
+ Then, you need to bring it out little by little. I think the difficulty of this is how we are going to talk about this and the presentation of PPT. Then, there may be some materials that need to be combined. At present, what I want to improve is some simple techniques, right? Yes. This won't work either. Then where did you get it last time? I took it back.
+
+start: 149.76 end: 180.54
+ It was on my desk. I took it to my desk. Then this PPT is completely white. The reason is that the whole DSSO. There must be white people in the whole DSSO. Because they are responsible for sales, market, and PR. And then, for example, the Internet. Anyway, we have to adapt this. Let these people who don't understand AI at all. Let them figure it out first. You don't have to figure it out completely. Just understand it roughly. Yes. First of all, we should have some scientific knowledge.
+
+start: 178.38 end: 210.56
+ In the scientific knowledge, it will include. For example, what is GPT? GPT later introduced a biodegradable AI. GPT is a biodegradable AI. And what is this thing usually talking about? And what is AIGC usually talking about? This is usually the name of Landa Street. And then, in the Internet, you can talk about Transformer, right?
+
+start: 209.38 end: 241.12
+ And then, for example, in the past, machine learning, deep learning, and things like that. I don't know. I don't know. This thing has to be listed. First of all, you have to have a提纲列传. And then, for example, these things are one page, right? And then these things are one page. Then we will know how long it will take to talk about a few contents. Because after this thing is done, we have to send it to Alex. Let's see if he thinks the same way. Right? Then the first big part is over.
+
+start: 239.32 end: 272.64
+ Then let's talk about, for example, the current status and some of the current developments. Right? That is to say, and for example, industry applications, right? Car industry applications, right? Mainly car industry applications. This thing, you can first. For example, there are a few core words here. A few core cases, right? A few core cases. Then in this case, this is another company value, right? Then I look at it. Then if you go further,
+
+start: 269.1 end: 300.76
+ it's mainly about what DSSO is doing. What are you doing? That is, for example, some research in the direction of the large-scale itself, right? Then there are some benchmarks. It will definitely continue to track, right? Then there are some trends of the alarm and the generator, right? Then there is also that. For example, for example, we are considering, for example, doing that, doing AI agent, and then what?
+
+start: 299.64 end: 332.79200000000003
+ Ah, this is cool. This is cool. I think these things can be a little bit deeper In here, because we have to talk about what we do, we can't talk too much about what we do For example, these things, these things can be a little bit more complete, and then there are some, for example, in terms of depth
+
+start: 319.79200000000003 end: 362.156
+ And then, uh, in terms of, uh, I'm not sure. This is what we're doing, a few specific things, and then what are we doing, what are we doing, what are we doing The story line is probably going to have something to do with this, which is that you're following the status quo and the development of this industry and then you're thinking about what we're doing Of course, we've already gone a step further and then and then at the end of the day, I think it's just one Just one, one, one, one, one, one, one, one, one, one In fact, I don't know about Zhan Wang. In the end, I don't know how to use this form. I think I need to think about it more deeply. For example, Zhan Wang is asking a question about a GPT.
+
+start: 359.876 end: 390.13599999999997
+ Of course, this question may actually be a pure product. For example, you just ask him about the development of the large intestine. Then, for example, the pronunciation of AI is the same as the birthday blessing of Graf. In fact, this side is all fake. It's not the birth of AI. You just tell him. You just tell him. He will tell you, right? There is an infinite possibility of GPT, etc. Something messy. Just let him reply to it. Then, you can make a product. Then, for example, I will talk to Tan Jun next time.
+
+start: 387.596 end: 420.19599999999997
+ Let Tan Jun come out of the factory and talk for 15 minutes. Then, officially, from the point of view of our Internet company or our partner, what is he like? Then, the last Q&A. Then, I will have 10 minutes to decide. Then, add this together. I think it will take about 40 to 45 minutes. Then, it can be divided into parts. It can be divided into parts. I think this is a relatively good PR event. Because for HR, they are very straightforward.
+
+start: 418.256 end: 450.816
+ That is to say, they set up this platform. We go to talk about things. Then, from our personal point of view, all the needs can be satisfied. For example, he came to talk to me like this. But I'm not very interested in this kind of thing. For example, the poster of Guo Qing over there is a yellow car. What? It's a technical poster. If you want to take a poster of my personal image, and then paste it to the DSSO, the whole container, they can do this kind of thing. It's like you want to pack the individual, you want to pack the team,
+
+start: 448.13599999999997 end: 491.072
+ or you want to pack some contributions from your team. In fact, it's all possible. But we need to work hard to make this event as high as possible from our point of view. So, I was going to say that the PVT should be like the DSSO account. I mean, don't talk too much. But now I'm not sure. I was going to say something like this. Don't talk too much.
+
+start: 481.55199999999996 end: 510.37199999999996
+ I will say that it's not the first ridiculous thing, our team cannot be doing all the research. In become more professional. That's it. Thank you. Thank you. This weekend, we have to give them a request. This weekend?
+
+start: 509.99199999999996 end: 540.3679999999999
+ Yes. Okay. Today is Wednesday, and we still have three days left, right? And then if it doesn't work, He Cai will do the PPT. But in the middle, for example, you don't have to search for the picture yourself. What kind of thing do you want? What kind of effect do you want to do? He's in Figma or PS, which is also very good. It's similar to doing it for you in this room. Or let him find some pictures or express something.
+
+start: 539.148 end: 570.384
+ But that's all later. We're going to improve it now. The improvement is mainly to think about Hu Bo and Lu Shen. And then after you two get together, after you two get together, We can meet on Friday afternoon. OK. This event, I think, can answer everyone's questions about what we are doing. I think it's an opportunity. But if we mess it up,
+
+start: 568.224 end: 602.392
+ everyone will think that we didn't do anything. So, how to seize this opportunity and do it better is... As you know, we are not in DSSO anymore, right? Before we leave DSSO, I think it's good to finish this thing. Yes. Didn't you say it a long time ago? After the HUB is established, everyone will move. We have nothing to do with DSSO anymore. What do you mean?
+
+start: 599.3720000000001 end: 633.432
+ We will change a company and a contract Is it TACO100? No, we will not talk about this detail But because we have a new company called ICB Hub Everyone belongs to the IT&D, finance, HR It is an overarching department It will not be distributed to every company Including the IT&D of the conference It will all be taken away In fact, it has little impact Not much impact on us It is a shareholder VW and DSS
+
+start: 629.712 end: 661.0600000000001
+ We are now in two companies with VW Then we will be together So it has little impact But we have nothing to do with DSS I think this is also a good thing The relationship with DSS is not very good The task is clear. Hu Bo and Lu Sen, you have to be as detailed as possible in the content. I will write it this way. You have to bring out a few points. Which points should be in one page? Which points should be in one page? Then you need to provide the following materials to Hu Bo.
+
+start: 659.6 end: 690.1360000000001
+ Hu Bo will provide them to He Cai. And then I will see if they can white-pick Huawei from the supplier side. We mainly rely on Tencent, Huawei doesn't rely on us Huawei doesn't want to Yes, then we will see how to package this The package needs to have some strategic ideas Ok, then I will open it Open your phone
+
+start: 684.2360000000001 end: 722.016
+ You can put it in, but don't get off the main line For example, I am talking about AI in the production room Or the big model You can't put an ASR in But if it is related to the big model But it may be related to something you are familiar with I don't know, you can put it in But the main line is around the big model and AIGC These two things to tell the story Ok? Ok
+
+start: 716.896 end: 750.916
+ If it's like this, will people think that we only do large-model AI machines? No, they won't. Because we talked about it. You have to talk about it here. These things are all talked about by people, right? Yes, but they have to match. You don't have to worry about this. Even if people think that you only do large-model AI machines, I don't think it's a bad thing. But now, the people in Toulouse feel that we have nothing to do with it. And that's it. Next week, I'll have a chat with Ziqun and ask him to come up with something.
+
+start: 749.6360000000001 end: 780.028
+ And then I'll ask them to come up with something. Including here, we can discuss the presentation form later. For example, some things can be directly, for example, the demo video form. And then, But maybe you don't need to pay for the voice. And then... Anyway, this thing is... Some things may be limited in the form of videos. Some things may be limited in the form of some fake videos. And then some things may be paid for.
+
+start: 777.588 end: 811.712
+ This is because it is a thing that is not a work report. How do you put this thing... I think we can do a demo of it before we use it. Sure. By the way, we can also say, for example, we created this thing, and when we talk about what we are doing next, we can put these things together, right? Yes. Okay. Then who should we collaborate with? VCIC. VCIC? VCIC. I think that the reason why we are using ICA Hub is because we are changing the room. We are changing the room and the old house.
+
+start: 810.212 end: 841.0200000000001
+ We are changing the Wifi. How can we change the Wifi? Can you tell me? I don't know. Then what are we changing? We are changing the ICA Hub. What? ICA Hub. ICA Hub. What does ICA Hub mean? Is it a company? No. ICV, what does it stand for, it doesn't have a name Or is it Is the process of registration a bit complicated
+
+start: 837.4000000000001 end: 870.0920000000002
+ Or it may be a project form The main body does not need to be changed Then we are all in the SOA Hub project This project is responsible for both DSSO and VWA And the meaning of S-W is connected. Weakness. You can only eat chicken in the Internet. That's weird. I can't understand. It's not possible to go to WCIE.
+
+start: 869.2520000000002 end: 895.2600000000001
+ What is WCIE? It's an investment company. Yeah, it seems to have nothing to do with us. Yes. Yes. You can do it even if you have a problem with your voice. I think it's from Beijing. Can you find it? Can you find it? Yes, it's here. What? It's right here. Where is it? Can't you see it? It's right here. Is it written in big letters? Yes, it is.
+
