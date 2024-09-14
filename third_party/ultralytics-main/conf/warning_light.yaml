@@ -1,0 +1,64 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# PASCAL VOC dataset http://host.robots.ox.ac.uk/pascal/VOC by University of Oxford
+# Documentation: # Documentation: https://docs.ultralytics.com/datasets/detect/voc/
+# Example usage: yolo train data=VOC.yaml
+# parent
+# ├── ultralytics
+# └── datasets
+#     └── VOC  ← downloads here (2.8 GB)
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: /home/tione/notebook/lskong2/projects/0.warning_lights/0.synthetic_data/output0/data/VOCdevkit/VOC2027
+train: # train images (relative to 'path')  16551 images
+  - train
+val: # val images (relative to 'path')  4952 images
+  - test
+test: # test images (optional)
+  - test
+
+# Classes
+names: 
+  0: '0'
+  1: '1'
+  2: '2'
+  3: '3'
+  4: '4'
+  5: '5'
+  6: '6'
+  7: '7'
+  8: '8'
+  9: '9'
+  10: '10'
+  11: '11'
+  12: '12'
+  13: '13'
+  14: '14'
+  15: '15'
+  16: '16'
+  17: '17'
+  18: '18'
+  19: '19'
+  20: '20'
+  21: '21'
+  22: '22'
+  23: '23'
+  24: '24'
+  25: '25'
+  26: '26'
+  27: '27'
+  28: '28'
+  29: '29'
+  30: '30'
+  31: '31'
+  32: '32'
+  33: '33'
+  34: '34'
+  35: '35'
+  36: '36'
+  37: '37'
+  38: '38'
+  39: '39'
+  40: '40'
+  41: '41'
+  42: '42'
+  
