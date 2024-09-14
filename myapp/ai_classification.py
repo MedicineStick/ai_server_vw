@@ -1,13 +1,9 @@
 import torch
-print('-------')
 from transformers.models.mobilenet_v2 import MobileNetV2ForImageClassification
 from transformers.models.mobilenet_v2 import MobileNetV2Config, MobileNetV2Model
-print('-------')
 from torchvision import transforms
-print('-------')
 from diffusers.utils import load_image
 from typing import Dict
-print('-------')
 from myapp.dsso_server import DSSO_SERVER
 from myapp.server_conf import ServerConfig
 

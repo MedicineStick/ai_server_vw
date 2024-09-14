@@ -82,6 +82,7 @@ class ServerConfig:
         self.tts_en_mem = config["tts_en_mem"]
         self.tts_cn_mem = config["tts_cn_mem"]
         self.translation_mem = config["translation_mem"]
+        self.translation_model_path = config["translation_model_path"]
 
 
         self.video_generation_mem = config["video_generation_mem"]

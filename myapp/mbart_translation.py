@@ -11,8 +11,8 @@ class mbart_translation(DSSO_SERVER):
         self.conf = conf
         self._need_mem = conf.translation_mem
         self.device = torch.device(self.conf.gpu_id)
-        self.model = MBartForConditionalGeneration.from_pretrained("myapp/resource/translation").to(self.device)
-        self.tokenizer = MBart50TokenizerFast.from_pretrained("myapp/resource/translation")
+        self.model = MBartForConditionalGeneration.from_pretrained(conf.translation_model_path).to(self.device)
+        self.tokenizer = MBart50TokenizerFast.from_pretrained(conf.translation_model_path)
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf

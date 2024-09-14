@@ -6,18 +6,8 @@ print("--->Loading warning_light_detection ...")
 from myapp.warning_light_detection import warning_light_detection
 print("--->Loading Super_Resolution ...")
 from myapp.super_resolution import Super_Resolution
-#print("--->Loading AI_Meeting ...")
-#from myapp.ai_meeting import AI_Meeting
 print("--->Loading AI_Meeting_Chatbot ...")
 from myapp.ai_meeting_chatbot import AI_Meeting_Chatbot
-print("--->Loading Online_ASR ...")
-from myapp.online_asr import Online_ASR
-print("--->Loading Online_ASR_webm ...")
-from myapp.online_asr_webm import Online_ASR_webm
-print("--->Loading TTS EN...")
-from myapp.vits_tts_en import vits_tts_en
-print("--->Loading TTS CN...")
-from myapp.vits_tts_cn  import vits_tts_cn
 print("--->Loading Mbart Translation...")
 from myapp.mbart_translation import mbart_translation
 print("--->Loading Video_Generation...")
@@ -28,6 +18,19 @@ print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
 from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
 print("--->Loading Sam2...")
 from myapp.sam2 import Sam2
+
+"""
+print("--->Loading AI_Meeting ...")
+from myapp.ai_meeting import AI_Meeting
+print("--->Loading TTS EN...")
+from myapp.vits_tts_en import vits_tts_en
+print("--->Loading TTS CN...")
+from myapp.vits_tts_cn  import vits_tts_cn
+print("--->Loading Online_ASR ...")
+from myapp.online_asr import Online_ASR
+print("--->Loading Online_ASR_webm ...")
+from myapp.online_asr_webm import Online_ASR_webm
+"""
 
 import json
 import torch
@@ -48,10 +51,10 @@ Model_name_dict = {
                 "ai_classification":AI_Classification(global_conf),
                 "forgery_detection":forgery_detection(global_conf),
                 "super_resolution":Super_Resolution(global_conf),
-                "online_asr":None,
-                "online_asr_webm":None,
-                "vits_tts_en":vits_tts_en(global_conf),
-                "vits_tts_cn":vits_tts_cn(global_conf),
+                #"online_asr":None,
+                #"online_asr_webm":None,
+                #"vits_tts_en":vits_tts_en(global_conf),
+                #"vits_tts_cn":vits_tts_cn(global_conf),
                 "translation":mbart_translation(global_conf),
                 "Video_Generation_Interface":Video_Generation_Interface(global_conf),
                 "super_resulution_video":Super_Resolution_Video(global_conf),

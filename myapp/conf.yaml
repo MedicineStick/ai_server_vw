@@ -1,23 +1,23 @@
 gpu_id : 3
 
 
-ai_classification_path : ../8.AI_classification/model_v1/
+ai_classification_path : "./checkpoints/ai_classifiy/"
 ai_classification_num_class : 5
 ai_classification_problem_type : multi_label_classification
 ai_classification_input_sz : 112
 ai_classification_mem : 550
 
-forgery_detection_b_image : ./myapp/resource/forgery/S-008607x1000.jpg
+forgery_detection_b_image : "./checkpoints/forgery/S-008607x1000.jpg"
 forgery_detection_mem : 700
 forgery_detection_pitch_size : 1024
 forgery_detection_threshold : 0.90
-forgery_detection_path : ./myapp/resource/forgery/last.pt
+forgery_detection_path : "./checkpoints/forgery/last.pt"
 
 
 warning_light_detection_mem : 700
 warning_light_detection_input_size : 640
 warning_light_detection_threshold : 0.8
-warning_light_detection_path : ./myapp/resource/0_warning_light/best.pt
+warning_light_detection_path : "./checkpoints/warning_light/best.pt"
 warning_light_detection_class_num : 43
 
 super_resolution_mem : 1500
@@ -26,7 +26,7 @@ super_resolution_pre_pad : 10
 super_resolution_outscale : 8
 super_resolution_tile : 200
 super_resolution_netscale : 4
-super_resolution_path : ./myapp/resource/SR/RealESRGAN_x4plus.pth
+super_resolution_path : "./SR/RealESRGAN_x4plus.pth"
 super_resolution_mode: 0
 
 
@@ -35,9 +35,9 @@ ai_meeting_mem : 10244
 ai_meeting_temp_path : "./temp/results/ai_meeting_results/"
 ai_meeting_output_encoding : "utf8"
 ai_meeting_ffmpeg_file : "ffmpeg"
-ai_meeting_vad_dir : "../2.tingjian/silero-vad-master/"
+ai_meeting_vad_dir : "./third_party/silero-vad-master/"
 ai_meeting_whisper_model_name : "large-v3"
-ai_meeting_asr_model_path : "../2.tingjian/models/"
+ai_meeting_asr_model_path : "./checkpoints/whispers/"
 ai_meeting_language : "en"
 ai_meeting_supported_sampling_rate : 16000
 #拼长时/秒，默认最优20s
@@ -61,10 +61,10 @@ ai_meeting_if_msdp : 1
 #说话人数目，打开后需要指定,大于1生效，其余不生效
 ai_meeting_n_speakers : 3
 # 分离配置文件路径，无需修改
-ai_meeting_manifest_file : "./myapp/resource/ai_meeting/manifest.json"
+ai_meeting_manifest_file : "./third_party/ai_meeting/manifest.json"
 #是否输出分离结果，0关，1开
 ai_meeting_if_write_msdp: 1
-ai_meeting_diar_infer_meeting_cfg : "./myapp/resource/ai_meeting/diar_infer_meeting.yaml"
+ai_meeting_diar_infer_meeting_cfg : "./third_party/ai_meeting/diar_infer_meeting.yaml"
 ai_meeting_file_cluster : "/speaker_outputs/subsegments_scale5_cluster.label"
 ai_meeting_output_dia : "./output_dia/"
 #-------------------
@@ -107,7 +107,7 @@ tts_en_mem : 700
 tts_cn_mem : 600
 
 translation_mem : 2400
-
+translation_model_path : "./checkpoints/translation/"
 
 video_generation_mem : 10000
 video_generation_t5_device : 2
@@ -121,8 +121,8 @@ realtime_asr_model_sample : 16000
 realtime_asr_gap_ms : 100
 
 sam2_device_id : 3
-sam2_video_dir : "/home/tione/notebook/lskong2/projects/AI_Server_V3/temp/results/sam2/"
-sam2_checkpoint : "/home/tione/notebook/lskong2/projects/AI_Server_V3/myapp/weights/sam2_hiera_base_plus.pt"
+sam2_video_dir : "./temp/results/sam2/"
+sam2_checkpoint : "./checkpoints/sam2_models/sam2_hiera_base_plus.pt"
 sam2_model_cfg : "sam2_hiera_b_plus.yaml"
 sam2_vis_frame_stride : 30
 

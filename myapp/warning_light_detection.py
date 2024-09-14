@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../3.forgery_detection/ultralytics-main")
+sys.path.append("./third_party/ultralytics-main/")
 
 from ultralytics import YOLO
 import torch
@@ -12,7 +12,7 @@ from diffusers.utils import load_image
 def get_VOC_Decription_MAP_1()->(dict,dict):
 
     VOC_CLASSES_MAP = {}
-    file_ = open("./myapp/resource/0_warning_light/label_map.txt",mode='r')
+    file_ = open("./checkpoints/warning_light/label_map.txt",mode='r')
     lines_ = file_.readlines()
     file_.close()
 
@@ -21,7 +21,7 @@ def get_VOC_Decription_MAP_1()->(dict,dict):
         VOC_CLASSES_MAP[int(line_[1].strip())] = line_[0].strip()+'.png'
 
     VOC_Decription_MAP = {}
-    file_ = open("./myapp/resource/0_warning_light/Warning_Light_Decription.txt",mode='r')
+    file_ = open("./checkpoints/warning_light/Warning_Light_Decription.txt",mode='r')
     lines_ = file_.readlines()
     file_.close()
     for line_ in lines_:

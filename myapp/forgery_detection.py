@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../3.forgery_detection/ultralytics-main")
+sys.path.append("./third_party/ultralytics-main/")
 from ultralytics import YOLO
 import torch
 from PIL import Image

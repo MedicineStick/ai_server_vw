@@ -9,7 +9,7 @@ import torchaudio
 import os
 import sys
 import urllib3
-sys.path.append("/home/tione/notebook/lskong2/projects/2.tingjian/")
+sys.path.append("./third_party/")
 import whisper
 from tqdm import tqdm
 #from modelscope import  AutoTokenizer
