@@ -206,8 +206,8 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_meeting_with_julia_0820",
-            "audio_url":"./temp/meeting_with_julia_0820.mp3",
+            "task_id":"lskong2_tesla_autopilot",
+            "audio_url":"./temp/tesla_autopilot.mp3",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
             "task_type":1,
@@ -595,7 +595,8 @@ async def video_generation_image2video():
             "if_sr":True,
             "image_start":"/home/tione/notebook/lskong2/softwares1/Open-Sora-1.2.0/samples/samples/pictures/1.jpg",
             "image_end":"",
-            "ratio":'16:9' #  16:9=0  9:16=1  1:1=2
+            "ratio":'16:9', #  16:9=0  9:16=1  1:1=2
+            "continue_url":""
             }
     output1 = {"video":"xxxx"}
 
@@ -789,6 +790,8 @@ if __name__ =="__main__":
         asyncio.run(video_generation_image2video())
     elif int(sys.argv[1]) ==21:
         asyncio.run(video_generation_connect())
+    elif int(sys.argv[1]) ==22:
+        asyncio.run(sam2())
     
 
 

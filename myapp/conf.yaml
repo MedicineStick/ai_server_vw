@@ -26,7 +26,7 @@ super_resolution_pre_pad : 10
 super_resolution_outscale : 8
 super_resolution_tile : 200
 super_resolution_netscale : 4
-super_resolution_path : "./SR/RealESRGAN_x4plus.pth"
+super_resolution_path : "./checkpoints/SR/RealESRGAN_x4plus.pth"
 super_resolution_mode: 0
 
 

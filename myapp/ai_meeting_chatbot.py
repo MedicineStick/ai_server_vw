@@ -219,8 +219,8 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         f_json_w.close()
         cfg['diarizer']['manifest_filepath'] = manifest_file_out
         cfg['diarizer']['out_dir'] = output_dia
-        cfg["diarizer"]["speaker_embeddings"]["model_path"]= "./myapp/resource/NeMo_1.21.0/titanet-l/11ba0924fdf87c049e339adbf6899d48/titanet-l.nemo"
-        cfg["diarizer"]["vad"]["model_path"]="./myapp/resource/NeMo_1.21.0/vad_multilingual_marblenet/670f425c7f186060b7a7268ba6dfacb2/vad_multilingual_marblenet.nemo"
+        cfg["diarizer"]["speaker_embeddings"]["model_path"]= "./third_party/NeMo_1.21.0/titanet-l/11ba0924fdf87c049e339adbf6899d48/titanet-l.nemo"
+        cfg["diarizer"]["vad"]["model_path"]="./third_party/NeMo_1.21.0/vad_multilingual_marblenet/670f425c7f186060b7a7268ba6dfacb2/vad_multilingual_marblenet.nemo"
         from nemo.collections.asr.models import ClusteringDiarizer
         sd_model = ClusteringDiarizer(cfg=cfg).to(self.device)
         sd_model.diarize()
