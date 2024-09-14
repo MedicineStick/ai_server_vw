@@ -89,63 +89,80 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         ):
         last = result.pop()
         second_last = None
-        if len(result)>0:
-            if result[-1]["refactoring"] ==True:
-                second_last = result[-1]
+        split_result = self.split_string(last['output'],self.pattern1)
 
-        
-        if last["refactoring"]==False:
-            split_result = self.split_string(last['output'],self.pattern1)
-            if len(split_result)==1:
-                if second_last==None:
+        if len(split_result)==1:
+            if len(result)>0:
+                if result[-1]["refactoring"]:
+                    if last['output'][-1] in self.punctuation:
+                        last["refactoring"] = True
+                        result.append(last)
+                    else:
+                        result.append(last)
+                else:
+                    if last['output'][-1] in self.punctuation:
+                        result[-1]["output"] = second_last["output"]+' '+last["output"]
+                        result[-1]["refactoring"]=True
+                    else:
+                        result[-1]["output"] = second_last["output"]+' '+last["output"]
+                        result[-1]["refactoring"]=False
+            else:
+                if last['output'][-1] in self.punctuation:
                     last["refactoring"]=True
                     result.append(last)
                 else:
-                    second_last["output"] = second_last["output"]+' '+last["output"]
-                    second_last["refactoring"]=True
-                return
-            else:
-                for i in range(0,len(split_result)):
-                    if i == len(split_result)-1:
-                        if split_result[i][-1] in self.punctuation:
-                            result.append(
-                                {
-                                "output":split_result[i],
-                                "trans": None,
-                                "refactoring":True   
-                                }
-                            )
-                        else:
-                            result.append(
-                                {
-                                "output":split_result[i],
-                                "trans": "",
-                                "refactoring":False   
-                                }
-                            )
-                    
-                    elif i == 0:
-                        if second_last==None :
-                            result.append(
-                                {
-                                "output":split_result[i],
-                                "trans": None,
-                                "refactoring":True   
-                                }
-                            )
-                        else:
-                            second_last["output"] = second_last["output"]+' '+split_result[i]
-                            second_last["refactoring"]=True
+                    result.append(last)
+        else:
+            for i in range(0,len(split_result)):
+                if i == len(split_result)-1:
+                    if split_result[i][-1] in self.punctuation:
+                        result.append(
+                            {
+                            "output":split_result[i],
+                            "trans": None,
+                            "refactoring":True   
+                            }
+                        )
                     else:
                         result.append(
+                            {
+                            "output":split_result[i],
+                            "trans": "",
+                            "refactoring":False   
+                            }
+                        )
+                
+                elif i == 0:
+                    if len(result)>0:
+                        if result[-1]["refactoring"]: 
+                            result.append(
                                 {
                                 "output":split_result[i],
                                 "trans": None,
                                 "refactoring":True   
                                 }
                             )
-        else:
-            pass
+                        else:
+                            result[-1]["output"] = result[-1]["output"]+' '+split_result[i]
+                            result[-1]["refactoring"]=True
+                    else:
+                        result.append(
+                            {
+                            "output":split_result[i],
+                            "trans": None,
+                            "refactoring":True   
+                            }
+                        )
+                else:
+                    result.append(
+                            {
+                            "output":split_result[i],
+                            "trans": None,
+                            "refactoring":True   
+                            }
+                        )
+
+
 
     def dsso_forward(self, request):
         output = {"text":""}
