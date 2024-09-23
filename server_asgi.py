@@ -125,7 +125,10 @@ async def start_server(websocket, path):
                     if model_name=="realtime_asr_whisper":
                         message_dict["task_id"] = task_id_asr
                         response, stop = await loop.run_in_executor(pool, realtime_asr_whisper_inference, message_dict,model_name)
-                        await websocket.send(json.dumps(response))
+                        if response["if_send"]:
+                            await websocket.send(json.dumps(response))
+                        else:
+                            pass
                         if stop: break
                     else:
                         response, _ = await loop.run_in_executor(pool, http_inference, global_conf, message_dict,model_name)

@@ -119,6 +119,7 @@ realtime_asr_whisper_model_name: "small"
 realtime_asr_min_combine_sents_sec: 10
 realtime_asr_model_sample : 16000
 realtime_asr_gap_ms : 100
+realtime_asr_beam_size : 8
 
 sam2_device_id : 3
 sam2_video_dir : "./temp/results/sam2/"

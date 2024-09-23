@@ -98,6 +98,7 @@ class ServerConfig:
         self.realtime_asr_model_sample = config["realtime_asr_model_sample"]
 
         self.realtime_asr_gap_ms = config["realtime_asr_gap_ms"]
+        self.realtime_asr_beam_size = config["realtime_asr_beam_size"]
 
         self.sam2_device_id = config["sam2_device_id"]
         self.sam2_video_dir = config["sam2_video_dir"]

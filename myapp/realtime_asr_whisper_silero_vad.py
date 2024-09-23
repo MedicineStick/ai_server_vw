@@ -34,6 +34,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         self.realtime_asr_min_combine_sents_sec = self.conf.realtime_asr_min_combine_sents_sec
         self.realtime_asr_model_sample = self.conf.realtime_asr_model_sample
         self.realtime_asr_gap_ms = self.conf.realtime_asr_gap_ms
+        self.realtime_asr_beam_size = self.conf.realtime_asr_beam_size
 
         print("Loading VAD model...")
         model, utils = torch.hub.load(repo_or_dir=self.conf.ai_meeting_vad_dir,
@@ -101,10 +102,10 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                         result.append(last)
                 else:
                     if last['output'][-1] in self.punctuation:
-                        result[-1]["output"] = second_last["output"]+' '+last["output"]
+                        result[-1]["output"] = result[-1]["output"]+' '+last["output"]
                         result[-1]["refactoring"]=True
                     else:
-                        result[-1]["output"] = second_last["output"]+' '+last["output"]
+                        result[-1]["output"] = result[-1]["output"]+' '+last["output"]
                         result[-1]["refactoring"]=False
             else:
                 if last['output'][-1] in self.punctuation:
@@ -165,7 +166,9 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
 
 
     def dsso_forward(self, request):
-        output = {"text":""}
+        
+        if_send = False
+        output = {"text":"","if_send":if_send}
         #print(request)
         if request["task_id"]==None:
             return output,False
@@ -177,12 +180,12 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             self.output_table[request["task_id"]] = []
 
         if request['state'] == "start":
-            return {request["task_id"]:self.output_table[request["task_id"]]},False
+            return {request["task_id"]:self.output_table[request["task_id"]],"if_send":if_send},False
         elif request['state'] == 'finished':
 
             temp = self.output_table[request["task_id"]]
             self.output_table.pop(request["task_id"])
-            return {request["task_id"]:temp},True
+            return {request["task_id"]:temp,"if_send":True},True
         else:
             decoded_audio = base64.b64decode(request['audio_data'])
 
@@ -192,7 +195,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             audio_tensor = torch.from_numpy(audio_samples).float()
             #torch.Size([4096])
             
-            if self.realtime_asr_model_sample == request['sample_rate']:
+            if self.realtime_asr_model_sample != request['sample_rate']:
                     resampler = torchaudio.transforms.Resample(orig_freq=request['sample_rate'], new_freq=self.realtime_asr_model_sample)
                     audio_tensor = resampler(audio_tensor)
             
@@ -201,7 +204,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                 dim=0
                 )
             
-            current_length = self.audio_tensors[request["task_id"]].shape[0]/request['sample_rate']
+            current_length = self.audio_tensors[request["task_id"]].shape[0]/self.realtime_asr_model_sample
 
             if current_length>=self.realtime_asr_min_combine_sents_sec:
                 
@@ -215,7 +218,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     )
                 speech_timestamps_list = process_timestamps(speech_timestamps)
                 if len(speech_timestamps_list)>0:   
-                    if speech_timestamps_list[-1][1]/request['sample_rate']+self.realtime_asr_gap_ms >= self.audio_tensors[request["task_id"]].shape[0]/request['sample_rate']:
+                    if speech_timestamps_list[-1][1]/self.realtime_asr_model_sample+self.realtime_asr_gap_ms >= self.audio_tensors[request["task_id"]].shape[0]/self.realtime_asr_model_sample:
                         speech_timestamps_list.pop()
                         if len(speech_timestamps_list)>0:
                            
@@ -236,16 +239,27 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     if valid_tensor.shape[0]==0:
                         pass
                     else:
-                        result = self.asr_model.transcribe(
-                                valid_tensor, 
-                                language=request['language_code'],
-                                beam_size = 8,
-                                fp16=torch.cuda.is_available()
-                                )
+                        if request["language_code"]=="zh":
+                            initial_prompt = "以下是普通话的句子，这是一段会议记录。"
+                            result = self.asr_model.transcribe(
+                                    valid_tensor, 
+                                    language=request['language_code'],
+                                    initial_prompt=initial_prompt,
+                                    beam_size = self.realtime_asr_beam_size,
+                                    fp16=torch.cuda.is_available(),
+                                    )
+                        else:
+                            result = self.asr_model.transcribe(
+                                    valid_tensor, 
+                                    language=request['language_code'],
+                                    beam_size = self.realtime_asr_beam_size,
+                                    fp16=torch.cuda.is_available(),
+                                    )
                     if result == None:
                         pass
                     else:
                         text_ = result['text'].strip()
+                        print(text_)
                         if len(text_)>0: 
                             self.output_table[request["task_id"]].append(
                                 {
@@ -256,9 +270,13 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                                 )
                             self.refactoring_result(self.output_table[request["task_id"]])
                             self._translation_callback(self.output_table[request["task_id"]],request['translation_task'])
+                            if_send = True
                 else:
                     pass
-        return {"key":self.output_table[request["task_id"]]},False
+        
+
+        return {"key":self.output_table[request["task_id"]],"if_send":if_send},False
+
 
     def _translation_callback(
         self,  
