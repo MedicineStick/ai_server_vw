@@ -122,33 +122,7 @@ async def start_server(websocket, path):
                     print("--->Can't recognize model name : {} \n".format(model_name))
                     break
                 else:
-                    if 'asr' in model_name.lower():
-                        #print("--->Inference asr model {}".format(model_name))
-                        pass
-                    else:
-                        print("--->Inference nonasr model {}, message {} ".format(model_name,message_dict))
-                    if model_name in Ws_Model_name_set and message_dict['state']=='start':
-                        if model_name =='online_asr':
-                            asr_model = Online_ASR(global_conf)
-                            asr_model.dsso_init(message_dict)
-                        elif model_name == 'online_asr_webm':
-                            asr_model_webm = Online_ASR_webm(global_conf)
-                            asr_model_webm.dsso_init(message_dict)
-                        else:
-                            print("--->Can't recognize model name : {} \n".format(model_name))
-                            break
-
-                    elif model_name in Ws_Model_name_set and message_dict['state'] !='start':
-                        if model_name =='online_asr':
-                            response, stop = await loop.run_in_executor(pool, realtime_asr_inference, message_dict,asr_model)
-                        elif model_name == 'online_asr_webm':
-                            response, stop = await loop.run_in_executor(pool, realtime_asr_inference, message_dict,asr_model_webm)
-                        else:
-                            break
-
-                        await websocket.send(json.dumps(response))
-                        if stop: break
-                    elif model_name=="realtime_asr_whisper":
+                    if model_name=="realtime_asr_whisper":
                         message_dict["task_id"] = task_id_asr
                         response, stop = await loop.run_in_executor(pool, realtime_asr_whisper_inference, message_dict,model_name)
                         await websocket.send(json.dumps(response))

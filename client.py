@@ -739,6 +739,75 @@ async def sam2():
         response = await websocket.recv()
         print(json.loads(response))
 
+
+async def realtime_asr_en():
+    import time
+    start_time = time.time()
+    async with websockets.connect(WS_URL,open_timeout=3000,close_timeout=3000) as websocket:
+
+        # wf = wave.open('/home/tione/notebook/lskong2/projects/2.tingjian/test_set/tesla_autopilot.wav', "rb")
+        # temp/1cdc7498c6d2b8dde71772e73e75af43.webm
+        wf = open('E://workspace//code//tesla_16000.wav', "rb")
+
+        sample_rate = 16000
+        input = {"project_name": "realtime_asr_whisper",
+                 "language_code": 'en', #zh 
+                 "audio_data": None,  #和之前一样
+                 "state": "continue",
+                 "sample_rate": sample_rate,  # int
+                 "translation_task":"none" # en2zh/zh2en/none  ##翻译任务，英到中/中到英/不翻译随便传
+                 }
+        
+        output = {
+            "key":
+            list[
+                dict[
+                "output":str, ###转写结果字符串数组
+                "trans":str | None, ###翻译结果字符串数组，可能有None
+                "refactoring": bool, ###是否规整，如果True则转写结果深色展示，否则浅色展示
+                "timestamp_start": float, ##句子起始时间
+                "timestamp_end" :float ##句子结束时间
+                ]
+            ]
+        }
+
+        buffer_size = int(sample_rate * 2 * 1)  # 0.2 seconds of audio
+        print("buffer_size: ", buffer_size)
+        buffer = 0
+        count = 0
+        while True:
+            """
+            count +=1
+            if count==120:
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+                print(f"Elapsed time: {elapsed_time} seconds")
+                # 107.0489194393158 seconds
+                # without translation 91.54747581481934 seconds
+                # without refactor 108
+                exit(0)
+            """
+            data = wf.read(buffer_size)
+            buffer += buffer_size
+            print(buffer)
+            if len(data) == 0:
+                break
+            encoded_audio = base64.b64encode(data).decode()
+            input['audio_data'] = encoded_audio
+            input['state'] = 'continue'
+
+            await websocket.send(json.dumps(input))
+            # exit(0)
+            response = await websocket.recv()
+            responses = json.loads(response)
+            
+            print(responses)
+
+        input['state'] = 'finished'
+        await websocket.send(json.dumps(input))
+        print(await websocket.recv())
+
+
 if __name__ =="__main__":
 
 

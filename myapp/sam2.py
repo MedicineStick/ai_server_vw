@@ -3,6 +3,8 @@ from myapp.dsso_server import DSSO_SERVER
 from myapp.server_conf import ServerConfig
 from myapp.dsso_util import download_image,generate_video_from_frames,CosUploader
 from typing import Dict
+import sys
+sys.path.append("./third_party/")
 from sam2.build_sam import build_sam2_video_predictor
 import os
 import numpy as np
