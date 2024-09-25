@@ -89,7 +89,6 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         result:list[dict[str:Any]]
         ):
         last = result.pop()
-        second_last = None
         split_result = self.split_string(last['output'],self.pattern1)
 
         if len(split_result)==1:
@@ -104,9 +103,11 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     if last['output'][-1] in self.punctuation:
                         result[-1]["output"] = result[-1]["output"]+' '+last["output"]
                         result[-1]["refactoring"]=True
+                        result[-1]["timestamp_end"] = last["timestamp_end"]
                     else:
                         result[-1]["output"] = result[-1]["output"]+' '+last["output"]
                         result[-1]["refactoring"]=False
+                        result[-1]["timestamp_end"] = last["timestamp_end"]
             else:
                 if last['output'][-1] in self.punctuation:
                     last["refactoring"]=True
@@ -115,21 +116,27 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     result.append(last)
         else:
             for i in range(0,len(split_result)):
+                timestamp_chunk = (last["timestamp_end"]-last["timestamp_start"])/len(split_result)
+
                 if i == len(split_result)-1:
                     if split_result[i][-1] in self.punctuation:
                         result.append(
                             {
                             "output":split_result[i],
                             "trans": None,
-                            "refactoring":True   
+                            "refactoring":True,
+                            "timestamp_start":result[-1]["timestamp_end"],
+                            "timestamp_end":result[-1]["timestamp_end"]+timestamp_chunk     
                             }
                         )
                     else:
                         result.append(
                             {
                             "output":split_result[i],
-                            "trans": "",
-                            "refactoring":False   
+                            "trans": None,
+                            "refactoring":False,
+                            "timestamp_start":result[-1]["timestamp_end"],
+                            "timestamp_end":result[-1]["timestamp_end"]+timestamp_chunk      
                             }
                         )
                 
@@ -140,18 +147,23 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                                 {
                                 "output":split_result[i],
                                 "trans": None,
-                                "refactoring":True   
+                                "refactoring":True,
+                                "timestamp_start":result[-1]["timestamp_end"],
+                                "timestamp_end":result[-1]["timestamp_end"]+timestamp_chunk      
                                 }
                             )
                         else:
                             result[-1]["output"] = result[-1]["output"]+' '+split_result[i]
                             result[-1]["refactoring"]=True
+                            result[-1]["timestamp_end"] = result[-1]["timestamp_end"]+timestamp_chunk
                     else:
                         result.append(
                             {
                             "output":split_result[i],
                             "trans": None,
-                            "refactoring":True   
+                            "refactoring":True, 
+                            "timestamp_start":0,
+                            "timestamp_end":timestamp_chunk 
                             }
                         )
                 else:
@@ -159,7 +171,9 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                             {
                             "output":split_result[i],
                             "trans": None,
-                            "refactoring":True   
+                            "refactoring":True,
+                            "timestamp_start":result[-1]["timestamp_end"],
+                            "timestamp_end":result[-1]["timestamp_end"]+timestamp_chunk    
                             }
                         )
 
@@ -168,10 +182,10 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
     def dsso_forward(self, request):
         
         if_send = False
-        output = {"text":"","if_send":if_send}
+        output = {"key":{},"if_send":if_send}
         #print(request)
         if request["task_id"]==None:
-            return output,False
+            return output,True
 
         if request["task_id"] in self.audio_tensors.keys():
             pass
@@ -180,12 +194,12 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             self.output_table[request["task_id"]] = []
 
         if request['state'] == "start":
-            return {request["task_id"]:self.output_table[request["task_id"]],"if_send":if_send},False
+            return {"key":self.output_table[request["task_id"]],"if_send":if_send},False
         elif request['state'] == 'finished':
+            #temp = self.output_table[request["task_id"]]
+            #self.output_table.pop(request["task_id"])
 
-            temp = self.output_table[request["task_id"]]
-            self.output_table.pop(request["task_id"])
-            return {request["task_id"]:temp,"if_send":True},True
+            return {"key":self.output_table[request["task_id"]],"if_send":True},True
         else:
             decoded_audio = base64.b64decode(request['audio_data'])
 
@@ -260,14 +274,24 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     else:
                         text_ = result['text'].strip()
                         print(text_)
-                        if len(text_)>0: 
+                        if len(text_)>0:
+
+                            last_end = 0.
+                            if len(self.output_table[request["task_id"]])==0:
+                                pass
+                            else:
+                                last_end = self.output_table[request["task_id"]][-1]["timestamp_end"]
+
                             self.output_table[request["task_id"]].append(
                                 {
                                 "output":text_,
                                 "trans":None,
-                                "refactoring":False
+                                "refactoring":False,
+                                "timestamp_start":last_end,
+                                "timestamp_end":last_end+valid_tensor.shape[0]/self.realtime_asr_model_sample
                                 }
                                 )
+                            print(last_end,last_end+valid_tensor.shape[0]/self.realtime_asr_model_sample)
                             self.refactoring_result(self.output_table[request["task_id"]])
                             self._translation_callback(self.output_table[request["task_id"]],request['translation_task'])
                             if_send = True
