@@ -293,7 +293,8 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                                 )
                             print(last_end,last_end+valid_tensor.shape[0]/self.realtime_asr_model_sample)
                             self.refactoring_result(self.output_table[request["task_id"]])
-                            self._translation_callback(self.output_table[request["task_id"]],request['translation_task'])
+                            if request['translation_task'] ==1:
+                                self._translation_callback(self.output_table[request["task_id"]],request['language_code'])
                             if_send = True
                 else:
                     pass
@@ -305,27 +306,27 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
     def _translation_callback(
         self,  
         result:list[dict[str:Any]],
-        task:str
+        language_code:str
         ):
 
         for i in range(len(result) - 1, -1, -1):
             if result[i]["trans"]==None:
                 if result[i]["refactoring"]:
-                    if task=="en2zh":
+                    if language_code=="en":
                         request_trans = {}
                         request_trans["task"] = 'en2zh'
                         request_trans["text"] = result[i]["output"]
                         output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
                         result[i]["trans"] = output_trans['result'].strip()
-                    elif task=="zh2en":
+                    elif language_code=="zh":
                         request_trans = {}
                         request_trans["task"] = 'zh2en'
                         request_trans["text"] = result[i]["output"]
                         output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
                         result[i]["trans"] = output_trans['result'].strip()
                     else:
-                        pass
+                        continue
                 else:
-                    pass
+                    continue
             else:
-                pass
+                continue
