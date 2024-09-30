@@ -1,4 +1,4 @@
-gpu_id : 3
+gpu_id : 2
 
 
 ai_classification_path : "./checkpoints/ai_classifiy/"

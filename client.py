@@ -206,15 +206,16 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_tesla_autopilot",
+            "task_id":"lskong2_tesla_autopilot_0930",
             "audio_url":"./temp/tesla_autopilot.mp3",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
             "task_type":1,
             "task_state":0,
-            "lang":"zh",
+            "lang":"en",
             "recognize_speakers":0,
-            "speaker_num":3 
+            "speaker_num":3,
+            "trans":1 
             }
     #data = {'project_name': 'ai_meeting_assistant_chatbot', 'audio_url': 'temp/results/ai_meeting_results/6122881163484439284/ori.wav', 'task_type': 1, 'task_id': '68228891663110586451a', 'lang': 'en', 'recognize_speakers': 1, 'speaker_num': 2, 'task_state': 0}
     encoded_data = json.dumps(data) #.encode("utf-8")
@@ -224,6 +225,26 @@ async def ai_meeting_chatbot():
         await websocket.send(encoded_data)
         response = await websocket.recv()
         print(f"Received from server: {response}")
+
+def ai_meeting_chatbot_offline():
+    data = {"project_name":"ai_meeting_assistant_chatbot",
+            "task_id":"lskong2_tesla_autopilot_0930",
+            "audio_url":"./temp/tesla_autopilot.mp3",
+            #"audio_url":"./temp/voice20240124.m4a",
+            #"audio_url":"./temp/luoxiang.wav",
+            "task_type":1,
+            "task_state":0,
+            "lang":"en",
+            "recognize_speakers":0,
+            "speaker_num":3,
+            "trans":1 
+            }
+    from myapp.ai_meeting_chatbot import AI_Meeting_Chatbot
+    global_conf = ServerConfig("./myapp/conf.yaml")
+    model = AI_Meeting_Chatbot(global_conf)
+    model.dsso_init(data)
+    response,_ = model.dsso_forward_http(data)
+    print(response)
 
 async def online_asr():
     
@@ -812,8 +833,8 @@ if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        test3()
-        #test2()
+        #asyncio.run(ai_meeting_chatbot())
+        ai_meeting_chatbot_offline()
         #print(test2())
         #vits_conversion()
     elif int(sys.argv[1]) == 1:

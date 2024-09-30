@@ -21,6 +21,7 @@ import json
 import urllib.request
 import logging
 import shutil
+from myapp.mbart_translation import mbart_translation
 logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
@@ -50,6 +51,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         self.device = torch.device(self.conf.gpu_id)
         torch.cuda.set_device(self.conf.gpu_id)
         print("--->Loading ASR model...")
+        self.mbart_translation_model = mbart_translation(conf)
         self.asr_model = whisper.load_model(
                 name=self.conf.ai_meeting_whisper_model_name,
                 download_root=self.conf.ai_meeting_asr_model_path
@@ -753,6 +755,26 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                 self.sum_file,
                 self.diar_sum_file
                 )
+            
+        if request["trans"]==1:
+            if request["lang"]=="en":
+                request_trans = {}
+                request_trans["task"] = 'en2zh'
+
+                for i in range(0,len(self.global_result['diarization_result'])):
+                    request_trans["text"] = self.global_result['diarization_result'][i]['text']
+                    output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
+                    self.global_result['diarization_result'][i]["trans"] = output_trans['result'].strip()
+                
+            elif request["lang"]=="zh":
+                request_trans = {}
+                request_trans["task"] = 'zh2en'
+                for i in range(0,len(self.global_result['diarization_result'])):
+                    request_trans["text"] = self.global_result['diarization_result'][i]['text']
+                    output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
+                    self.global_result['diarization_result'][i]["trans"] = output_trans['result'].strip()
+            else:
+                pass
 
     def llm_summary(self, request:Dict)->Dict:
         pass
