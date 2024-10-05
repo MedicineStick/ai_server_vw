@@ -131,6 +131,7 @@ async def start_server(websocket, path):
                             pass
                         if stop: break
                     else:
+                        print("request: ",message_dict)
                         response, _ = await loop.run_in_executor(pool, http_inference, global_conf, message_dict,model_name)
                         print("response: ",response)
                         await websocket.send(json.dumps(response))
