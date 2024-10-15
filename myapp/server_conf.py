@@ -94,11 +94,10 @@ class ServerConfig:
 
         self.realtime_asr_whisper_model_name = config["realtime_asr_whisper_model_name"]
         self.realtime_asr_min_combine_sents_sec = config["realtime_asr_min_combine_sents_sec"]
-        
         self.realtime_asr_model_sample = config["realtime_asr_model_sample"]
-
         self.realtime_asr_gap_ms = config["realtime_asr_gap_ms"]
         self.realtime_asr_beam_size = config["realtime_asr_beam_size"]
+        self.realtime_asr_min_silence_duration_ms = config["realtime_asr_min_silence_duration_ms"]
 
         self.sam2_device_id = config["sam2_device_id"]
         self.sam2_video_dir = config["sam2_video_dir"]

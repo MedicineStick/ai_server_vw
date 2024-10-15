@@ -6,14 +6,16 @@ from typing import Dict
 import sys
 sys.path.append("./third_party/")
 from sam2.build_sam import build_sam2_video_predictor
+from sam2.build_sam import build_sam2
+from sam2.sam2_image_predictor import SAM2ImagePredictor
 import os
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import numpy as np
 import logging  # OpenCV for image processing
 import shutil
+from diffusers.utils import load_image
 
 
 
@@ -24,10 +26,19 @@ class Sam2(DSSO_SERVER):
         self.conf = conf
         self._need_mem = self.conf.ai_classification_mem
         self.device = torch.device(self.conf.sam2_device_id)
-        self.predictor = build_sam2_video_predictor(self.conf.sam2_model_cfg, self.conf.sam2_checkpoint, device=self.device)
+        self.predictor = build_sam2_video_predictor(
+            self.conf.sam2_model_cfg, 
+            self.conf.sam2_checkpoint, 
+            device=self.device)
         self.temp_video_path = self.conf.sam2_video_dir
         self.sam2_vis_frame_stride = self.conf.sam2_vis_frame_stride
         self.inference_state = None
+        sam2_model = build_sam2(
+            self.conf.sam2_model_cfg, 
+            self.conf.sam2_checkpoint, 
+            device=self.device)
+
+        self.image_predictor = SAM2ImagePredictor(sam2_model)
         try:
             self.uploader = CosUploader(self.conf.super_resolution_mode)
         except Exception as e:
@@ -43,6 +54,42 @@ class Sam2(DSSO_SERVER):
 
 
     def dsso_forward(self, request: Dict) -> Dict:
+        if request["sam2_task"]=="video":
+           output_map,flag = self.dsso_forward_video(request)
+           return output_map,flag
+        elif request["sam2_task"]=="image":
+           output_map,flag = self.dsso_forward_image(request)
+           return output_map,flag
+        else:
+            return {},True
+
+    def dsso_forward_image(self, request: Dict) -> Dict:
+        image_url  = request["image_url"]
+        self.image_predictor.set_image(load_image(image_url))
+        """
+        input_point_list = np.array(request["input_point"])  #[[500, 375]]
+        input_label_list = np.array(request["input_label"])  #[1]
+        masks, scores, logits = self.image_predictor.predict(
+            point_coords=input_point_list,
+            point_labels=input_label_list,
+            multimask_output=True,
+        )
+        sorted_ind = np.argsort(scores)[::-1]
+        masks = masks[sorted_ind]
+        scores = scores[sorted_ind]
+        logits = logits[sorted_ind]
+        """
+        masks = self.image_predictor.get_image_embedding()
+
+        b = masks.data.cpu().numpy() # 数据类型转换
+        np.save("./temp/output.npy",b)
+        url = self.uploader.upload_file(file="./temp/output.npy",key=None,extension='npy')
+        output_map = {"npy_url":url}
+        output_map['state'] = 'finished'
+        return output_map,True
+
+
+    def dsso_forward_video(self, request: Dict) -> Dict:
         output_map = {}
         name = request["task_name"].replace(' ','').strip()
         temp_video = self.temp_video_path + '/'+name+'.mp4'

@@ -35,6 +35,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         self.realtime_asr_model_sample = self.conf.realtime_asr_model_sample
         self.realtime_asr_gap_ms = self.conf.realtime_asr_gap_ms
         self.realtime_asr_beam_size = self.conf.realtime_asr_beam_size
+        self.realtime_asr_min_silence_duration_ms = self.conf.realtime_asr_min_silence_duration_ms
 
         print("Loading VAD model...")
         model, utils = torch.hub.load(repo_or_dir=self.conf.ai_meeting_vad_dir,
@@ -50,6 +51,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         _) = utils
         self.vad_model = model
         self.get_speech_timestamps = get_speech_timestamps
+        #/home/tione/notebook/lskong2/projects/ai_server_vw/third_party/silero-vad-master/utils_vad.py
         self.read_audio = read_audio
         self.punctuation = set()
         self.punctuation.add('.')
@@ -228,7 +230,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     self.audio_tensors[request["task_id"]], 
                     self.vad_model, 
                     sampling_rate=self.realtime_asr_model_sample,
-                    min_silence_duration_ms = 500,
+                    min_silence_duration_ms = self.realtime_asr_min_silence_duration_ms,
                     )
                 speech_timestamps_list = process_timestamps(speech_timestamps)
                 if len(speech_timestamps_list)>0:   
