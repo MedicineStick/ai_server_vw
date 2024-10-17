@@ -106,6 +106,11 @@ class ServerConfig:
         self.sam2_vis_frame_stride = config["sam2_vis_frame_stride"]
 
 
+        self.sam1_device_id = config["sam1_device_id"]
+        self.sam1_checkpoint = config["sam1_checkpoint"]
+        self.sam1_model_type = config["sam1_model_type"]
+
+
         
         
 

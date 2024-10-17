@@ -18,6 +18,31 @@ import matplotlib.pyplot as plt
 def format_number(num):
     return f"/{num:05}.jpg"
 
+import cv2
+import requests
+import numpy as np
+from io import BytesIO
+
+def load_image_cv2(image_path_or_url):
+    # Check if it's a URL (starts with 'http')
+    if image_path_or_url.startswith('http'):
+        response = requests.get(image_path_or_url)
+        if response.status_code == 200:
+            image_data = np.asarray(bytearray(response.content), dtype="uint8")
+            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+        else:
+            raise Exception(f"Failed to load image from URL: {image_path_or_url}")
+    else:  # Assume it's a local file
+        image = cv2.imread(image_path_or_url)
+        if image is None:
+            raise Exception(f"Failed to load local image: {image_path_or_url}")
+    
+    # Convert from BGR to RGB (OpenCV loads in BGR by default)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    return image
+
+
 def apply_mask(image: np.ndarray, mask: np.ndarray, color=(0, 255, 0), alpha=0.5) -> np.ndarray:
     """
     Apply a boolean mask to an image and output the image with the mask overlay.
@@ -224,6 +249,10 @@ def bytes_from_audio(audio_array):
     buffer.seek(0)
     return buffer.read()
 
+def bytes_from_file(file_path):
+    with open(file_path, 'rb') as file:
+        return file.read()
+
 
 def bytes_from_audio_tensor(audio_tensor:torch.Tensor, sample_rate=44100, format='wav'):
     """
@@ -345,6 +374,32 @@ class CosUploader:
                 response = self.client.put_object(
                     Bucket=self.bucket,
                     Body=bytes_from_video_file(video),
+                    Key=key)
+                url = self.client.get_object_url(
+                    Bucket=self.bucket,
+                    Key=key,
+                )
+                return url
+            except (CosClientError, CosServiceError) as e:
+                logging.error(f"failed to upload image: {e}")
+        return ""
+    
+    def upload_file(self, file_temp:str ,key: str = None) -> str:
+
+        extension = file_temp[file_temp.rfind('.'):]
+        if key is None:
+            import uuid
+            key = str(uuid.uuid4()) + extension
+        if len(self.prefix) > 0:
+            key = os.path.join(self.prefix, key)
+        from qcloud_cos.cos_exception import CosClientError, CosServiceError
+
+        # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
+        for i in range(0, 10):
+            try:
+                response = self.client.put_object(
+                    Bucket=self.bucket,
+                    Body=bytes_from_file(file_temp),
                     Key=key)
                 url = self.client.get_object_url(
                     Bucket=self.bucket,

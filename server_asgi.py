@@ -18,6 +18,8 @@ print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
 from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
 print("--->Loading Sam2...")
 from myapp.sam2 import Sam2
+print("--->Loading Sam1...")
+from myapp.sam1 import Sam1
 
 """
 print("--->Loading AI_Meeting ...")
@@ -59,7 +61,8 @@ Model_name_dict = {
                 "Video_Generation_Interface":Video_Generation_Interface(global_conf),
                 "super_resulution_video":Super_Resolution_Video(global_conf),
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(global_conf),
-                "sam2":Sam2(global_conf)
+                "sam2":Sam2(global_conf),
+                "sam1":Sam1(global_conf)
             }
 
 Ws_Model_name_set = set()

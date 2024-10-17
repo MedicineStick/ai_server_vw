@@ -128,6 +128,10 @@ sam2_checkpoint : "./checkpoints/sam2_models/sam2_hiera_base_plus.pt"
 sam2_model_cfg : "sam2_hiera_b_plus.yaml"
 sam2_vis_frame_stride : 30
 
+sam1_device_id: 3
+sam1_checkpoint: "./checkpoints/sam1_models/sam_vit_h_4b8939.pth"
+sam1_model_type : "vit_h"
+
 
 
 

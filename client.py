@@ -761,6 +761,28 @@ async def sam2():
         print(json.loads(response))
 
 
+async def sam1():
+
+    data = {"project_name":"sam1",
+            'image_url':'temp/20241009103740.jpg',
+            }
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    async with websockets.connect(WS_URL, max_size=3000000) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(json.loads(response))
+
+def test_sam1():
+    data = {"project_name":"sam1",
+            'image_url':'temp/20241009103740.jpg',
+            }
+    from myapp.sam1 import Sam1
+    global_conf = ServerConfig("./myapp/conf.yaml")
+    model  = Sam1(global_conf)
+    model.dsso_init()
+    model.dsso_forward(data)
+
+
 async def realtime_asr_en():
     import time
     start_time = time.time()
@@ -829,13 +851,21 @@ async def realtime_asr_en():
         print(await websocket.recv())
 
 
+def test_cos():
+    from myapp.dsso_util import CosUploader
+    uploader = CosUploader(0)
+
+    response = uploader.upload_file("../../softwares1/segment-anything-main/models/sam_onnx_quantized_example.onnx")
+    print(response)
+
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        #asyncio.run(ai_meeting_chatbot())
-        ai_meeting_chatbot_offline()
-        #print(test2())
+        asyncio.run(sam1())
+        #ai_meeting_chatbot_offline()
+        #test_sam1()
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())
