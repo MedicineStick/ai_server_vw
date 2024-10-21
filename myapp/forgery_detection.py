@@ -6,9 +6,9 @@ from PIL import Image
 from typing import Dict
 from myapp.dsso_server import DSSO_SERVER 
 import cv2
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 from diffusers.utils import load_image
-
+from models.dsso_model import DSSO_MODEL
 from PIL import Image
 
 def split_image_pillow(img_src: str, pitch_size: int, img_b: str):
@@ -78,13 +78,17 @@ def split_image(img_src:str,pitch_size:int,img_b:str):
 
 
 class forgery_detection(DSSO_SERVER):
-    def __init__(self,conf:ServerConfig):
+    def __init__(
+        self,
+        conf:ServerConfig,
+        model:DSSO_MODEL
+        ):
         print("--->initialize forgery_detection...")
         super().__init__()
         self.conf = conf
         self._need_mem = conf.forgery_detection_mem
         self.device = torch.device(self.conf.gpu_id)
-        self.model = YOLO(self.conf.forgery_detection_path).to(self.device) # load an official model
+        self.model = model
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -106,7 +110,7 @@ class forgery_detection(DSSO_SERVER):
             print(len(image_list),n_pitch)
             for i in range(0,n_pitch):
                 for j in range(0,n_pitch):
-                    results = self.model.predict(source=image_list[i*n_pitch+j], save=False)
+                    results = self.model.predict_func(image_url = image_list[i*n_pitch+j])
                     for r in results:
                         boxes = r.boxes
                         for box in boxes:

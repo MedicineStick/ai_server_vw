@@ -3,10 +3,10 @@ import numpy as np
 import torch
 import base64
 from myapp.dsso_server import DSSO_SERVER
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 from myapp.mbart_translation import mbart_translation
 from typing import Any
-from myapp.dsso_util import process_timestamps
+from models.dsso_util import process_timestamps
 import torchaudio
 # https://github.com/snakers4/silero-vad/blob/master/examples/cpp/silero-vad-onnx.cpp
 # https://github.com/mozilla/DeepSpeech-examples/blob/r0.8/mic_vad_streaming/mic_vad_streaming.py
@@ -14,20 +14,25 @@ import torchaudio
 # https://github.com/davabase/whisper_real_time/tree/master
 import sys
 sys.path.append("/home/tione/notebook/lskong2/projects/2.tingjian/")
-import whisper
+from models.dsso_model import DSSO_MODEL
 import torchaudio
 import re
 
 class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
-    def __init__(self,conf:ServerConfig):
-        print("--->initialize Online_ASR...")
+    def __init__(
+            self,
+            conf:ServerConfig,
+            asr_model:DSSO_MODEL,
+            translation_model:DSSO_MODEL,
+            ):
+        print("--->initialize Realtime_ASR_Whisper_Silero_Vad...")
         super().__init__()
         self.conf = conf
         self._need_mem = self.conf.online_asr_mem
         self.model = None
         self.rec = None
         self.output_text = {}
-        self.mbart_translation_model = mbart_translation(conf)
+        self.mbart_translation_model = translation_model
         self.audio_tensors:dict[str:torch.Tensor] = {}
         self.if_translation = False
         self.output_table:dict[str:dict] = {}
@@ -64,10 +69,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         self.pattern = ''.join(self.punctuation).strip()
         self.pattern1 = f'[{"".join(re.escape(p) for p in self.punctuation)}]'
 
-        self.asr_model = whisper.load_model(
-                name=self.conf.realtime_asr_whisper_model_name,
-                download_root=self.conf.ai_meeting_asr_model_path
-                )
+        self.asr_model = asr_model
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -257,16 +259,18 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     else:
                         if request["language_code"]=="zh":
                             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
-                            result = self.asr_model.transcribe(
-                                    valid_tensor, 
-                                    language=request['language_code'],
-                                    initial_prompt=initial_prompt,
-                                    beam_size = self.realtime_asr_beam_size,
-                                    fp16=torch.cuda.is_available(),
-                                    )
+
+                            result = self.asr_model.predict_func(
+                                audio = valid_tensor,
+                                language=request['language_code'],
+                                initial_prompt=initial_prompt,
+                                beam_size = self.realtime_asr_beam_size,
+                                fp16=torch.cuda.is_available(),
+                            )
+
                         else:
-                            result = self.asr_model.transcribe(
-                                    valid_tensor, 
+                            result = self.asr_model.predict_func(
+                                    audio = valid_tensor, 
                                     language=request['language_code'],
                                     beam_size = self.realtime_asr_beam_size,
                                     fp16=torch.cuda.is_available(),
@@ -315,17 +319,19 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             if result[i]["trans"]==None:
                 if result[i]["refactoring"]:
                     if language_code=="en":
-                        request_trans = {}
-                        request_trans["task"] = 'en2zh'
-                        request_trans["text"] = result[i]["output"]
-                        output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
-                        result[i]["trans"] = output_trans['result'].strip()
+
+                        output_trans = self.mbart_translation_model.predict_func(
+                            task = 'en2zh',
+                            text = result[i]["output"]
+                        )
+                        result[i]["trans"] = output_trans.strip()
                     elif language_code=="zh":
-                        request_trans = {}
-                        request_trans["task"] = 'zh2en'
-                        request_trans["text"] = result[i]["output"]
-                        output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
-                        result[i]["trans"] = output_trans['result'].strip()
+
+                        output_trans = self.mbart_translation_model.predict_func(
+                            task = 'zh2en',
+                            text = result[i]["output"]
+                        )
+                        result[i]["trans"] = output_trans.strip()
                     else:
                         continue
                 else:

@@ -1,7 +1,7 @@
 from typing import Dict
 from myapp.dsso_server import DSSO_SERVER
-from myapp.server_conf import ServerConfig
-from myapp.dsso_util import audio_preprocess,get_speech_timestamps_silero_vad,process_timestamps,trim_audio
+from models.server_conf import ServerConfig
+from models.dsso_util import audio_preprocess,get_speech_timestamps_silero_vad,process_timestamps,trim_audio
 import os
 import torch
 import torch.onnx
@@ -16,11 +16,12 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 from typing import Union
 from collections import Counter
-from myapp.dsso_util import CosUploader
+from models.dsso_util import CosUploader
 import json
 import urllib.request
 import logging
 import shutil
+from models.dsso_model import DSSO_MODEL
 from myapp.mbart_translation import mbart_translation
 logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -29,7 +30,13 @@ logging.basicConfig(level=logging.INFO,
 
 @torch.no_grad()
 class AI_Meeting_Chatbot(DSSO_SERVER):
-    def __init__(self,conf:ServerConfig):
+    def __init__(
+        self,
+        conf:ServerConfig,
+        asr_model:DSSO_MODEL,
+        translation_model:DSSO_MODEL,
+        uploader:CosUploader
+        ):
         print("--->initialize AI_Meeting_Chatbot...")
         super().__init__()
         self.conf = conf
@@ -47,15 +54,12 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         self.speakerlabels_:list[int] = []
         self.task_father_path = self.conf.ai_meeting_temp_path+'/'
         self.min_combine_sents_sec_sample= self.conf.ai_meeting_min_combine_sents_sec*self.conf.ai_meeting_supported_sampling_rate
-        self.uploader = CosUploader(self.conf.super_resolution_mode)
+        self.uploader = uploader
         self.device = torch.device(self.conf.gpu_id)
         torch.cuda.set_device(self.conf.gpu_id)
         print("--->Loading ASR model...")
-        self.mbart_translation_model = mbart_translation(conf)
-        self.asr_model = whisper.load_model(
-                name=self.conf.ai_meeting_whisper_model_name,
-                download_root=self.conf.ai_meeting_asr_model_path
-                )
+        self.mbart_translation_model = translation_model
+        self.asr_model = asr_model
 
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -632,7 +636,13 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                 for i in tqdm(range(0,len(output_tensors))):
                     #output_tensors.append(cut_waveform.squeeze(0))
                     tensor_ = output_tensors[i].squeeze(0)
-                    result = self.asr_model.transcribe(tensor_, word_timestamps=True,language=self.conf.ai_meeting_language,beam_size = self.conf.ai_meeting_beam_size)
+                    result = self.asr_model.predict_func(
+                        audio = tensor_,
+                        word_timestamps=True,
+                        language=self.conf.ai_meeting_language,
+                        beam_size = self.conf.ai_meeting_beam_size
+                    )
+
                     results.append(result["text"])
                     result['segments'] = [{**d, 'last_seg_duration': last_seg_duration} for d in result['segments']]
                     for result in result['segments']:
@@ -644,7 +654,12 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
             else:
                 for i in tqdm(range(0,len(output_tensors))):
                     tensor_ = output_tensors[i].squeeze(0)
-                    result = self.asr_model.transcribe(tensor_, word_timestamps=True,beam_size = self.conf.ai_meeting_beam_size)
+                    result = self.asr_model.predict_func(
+                        audio = tensor_,
+                        word_timestamps=True,
+                        beam_size = self.conf.ai_meeting_beam_size
+                    )
+
                     results.append(result["text"])
                     result['segments'] = [{**d, 'last_seg_duration': last_seg_duration} for d in result['segments']]
                     #self.global_result['asr_result'].extend(result['segments'])
@@ -762,17 +777,22 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                 request_trans["task"] = 'en2zh'
 
                 for i in range(0,len(self.global_result['diarization_result'])):
-                    request_trans["text"] = self.global_result['diarization_result'][i]['text']
-                    output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
-                    self.global_result['diarization_result'][i]["trans"] = output_trans['result'].strip()
+
+                    result = self.mbart_translation_model.predict_func(
+                        task = request_trans["task"],
+                        text = self.global_result['diarization_result'][i]['text'])
+                    
+                    self.global_result['diarization_result'][i]["trans"] = result.strip()
                 
             elif request["lang"]=="zh":
                 request_trans = {}
                 request_trans["task"] = 'zh2en'
                 for i in range(0,len(self.global_result['diarization_result'])):
-                    request_trans["text"] = self.global_result['diarization_result'][i]['text']
-                    output_trans,_ = self.mbart_translation_model.dsso_forward(request_trans)
-                    self.global_result['diarization_result'][i]["trans"] = output_trans['result'].strip()
+
+                    result = self.mbart_translation_model.predict_func(
+                        task = request_trans["task"],
+                        text = self.global_result['diarization_result'][i]['text'])
+                    self.global_result['diarization_result'][i]["trans"] = result.strip()
             else:
                 pass
 

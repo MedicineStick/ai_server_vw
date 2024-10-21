@@ -18,15 +18,25 @@ import wave
 import base64
 import sys
 import asyncio
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 import re
 import numpy as np 
 from scipy.io.wavfile import write
 WS_URL = 'ws://localhost:9501/ws'
-#WS_URL = 'ws://172.27.7.47/ms-ptbk4wlp-1/ws'
+from typing import Any
+
+def inner_func(audio:int,name:str):
+    print(audio)
+    print(name)
+
+def func_args(**kwargs)->dict:
+    inner_func(**kwargs)
+
+def test_args():
+    func_args(audio = 1,name = "Kay")
 
 def vits_conversion():
-    from myapp.dsso_util import audio_preprocess,get_speech_timestamps_silero_vad,process_timestamps,trim_audio
+    from models.dsso_util import audio_preprocess,get_speech_timestamps_silero_vad,process_timestamps,trim_audio
     import torchaudio
     audio_url = "/home/tione/notebook/lskong2/projects/2.tingjian/test_set/luoxiang.mp3"
     output_path = "temp/audio/"
@@ -58,7 +68,7 @@ def vits_conversion():
 
 
 def test3():
-    from myapp.dsso_util import CosUploader
+    from models.dsso_util import CosUploader
     import torchaudio
     file_a = "../2.tingjian/test_set/temp_resample_concated.wav"
     #waveform,sr = torchaudio.load("../2.tingjian/test_set/temp_resample_concated.wav",normalize=True)
@@ -206,7 +216,7 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_tesla_autopilot_0930",
+            "task_id":"lskong2_tesla_autopilot_1021",
             "audio_url":"./temp/tesla_autopilot.mp3",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
@@ -852,7 +862,7 @@ async def realtime_asr_en():
 
 
 def test_cos():
-    from myapp.dsso_util import CosUploader
+    from models.dsso_util import CosUploader
     uploader = CosUploader(0)
 
     response = uploader.upload_file("../../softwares1/segment-anything-main/models/sam_onnx_quantized_example.onnx")
@@ -863,9 +873,9 @@ if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        asyncio.run(sam1())
+        #asyncio.run(sam1())
         #ai_meeting_chatbot_offline()
-        #test_sam1()
+        test_args()
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())

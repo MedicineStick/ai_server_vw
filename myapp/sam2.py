@@ -1,7 +1,7 @@
 import torch
 from myapp.dsso_server import DSSO_SERVER
-from myapp.server_conf import ServerConfig
-from myapp.dsso_util import download_image,generate_video_from_frames,CosUploader
+from models.server_conf import ServerConfig
+from models.dsso_util import download_image,generate_video_from_frames,CosUploader
 from typing import Dict
 import sys
 sys.path.append("./third_party/")
@@ -83,7 +83,7 @@ class Sam2(DSSO_SERVER):
 
         b = masks.data.cpu().numpy() # 数据类型转换
         np.save("./temp/output.npy",b)
-        url = self.uploader.upload_file(file="./temp/output.npy",key=None,extension='npy')
+        url = self.uploader.upload_file(file_temp="./temp/output.npy",key=None)
         output_map = {"npy_url":url}
         output_map['state'] = 'finished'
         return output_map,True

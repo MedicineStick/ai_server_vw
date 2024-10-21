@@ -34,9 +34,9 @@ from opensora.utils.inference_utils import (
 )
 from opensora.utils.misc import all_exists, create_logger, is_distributed, is_main_process, to_torch_dtype
 from myapp.dsso_server import DSSO_SERVER
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 from typing import Dict
-from myapp.dsso_util import CosUploader,download_image
+from models.dsso_util import CosUploader,download_image
 import logging
 
 class Video_Generation(DSSO_SERVER):

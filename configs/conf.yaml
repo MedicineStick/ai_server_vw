@@ -132,6 +132,8 @@ sam1_device_id: 3
 sam1_checkpoint: "./checkpoints/sam1_models/sam_vit_h_4b8939.pth"
 sam1_model_type : "vit_h"
 
+cos_uploader_mode : 0
+
 
 
 

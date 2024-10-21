@@ -1,27 +1,25 @@
 import sys
 import torch
-from typing import Dict
-from myapp.dsso_server import DSSO_SERVER 
-from myapp.server_conf import ServerConfig
+from models.dsso_model import DSSO_MODEL
+from models.server_conf import ServerConfig
 import base64
 sys.path.append("./third_party/vits_cn/")
 from third_party.vits_cn.text.symbols import symbols
 from third_party.vits_cn.vits_pinyin import VITS_PinYin
 from third_party.vits_cn.text import cleaned_text_to_sequence
 from third_party.vits_cn import utils
+sys.path.pop()
 
 
-
-class vits_tts_cn(DSSO_SERVER):
+class VitsTTSCN(DSSO_MODEL):
     def __init__(self,conf:ServerConfig):
         super().__init__()
-        print("--->initialize vits_tts_cn...")
+        print("--->initialize VitsTTSCN...")
         self.conf = conf
-        self._need_mem = conf.tts_cn_mem
         self.device = torch.device(self.conf.gpu_id)
         self.tts_front = VITS_PinYin("./third_party/vits_cn/bert", self.device)
         config='./third_party/vits_cn/configs/bert_vits.json'
-        model='./third_party/vits_cn/vits_bert_model.pth'
+        model='./checkpoints/vit/vits_bert_model.pth'
         hps = utils.get_hparams_from_file(config)
         self.net_g = utils.load_class('third_party.vits_cn.models.SynthesizerEval')(
             len(symbols),
@@ -32,21 +30,10 @@ class vits_tts_cn(DSSO_SERVER):
         self.net_g.eval()
         self.net_g.to(self.device)
 
-
-
-        
-    def dsso_reload_conf(self,conf:ServerConfig):
-        self.conf = conf
-        self._need_mem = conf.tts_cn_mem
-
-    def dsso_init(self,req:Dict = None)->bool:
-        pass
-
-        
-    def dsso_forward(self, request: Dict) -> Dict:
+    def predict_func(self, **kwargs)->dict:
         output_map = {}
-        _ = request["gender"]
-        item = request["text"]
+        _ = kwargs["gender"]
+        item = kwargs["text"]
         if (item == None or item == ""):
             return output_map,True
         phonemes, char_embeds = self.tts_front.chinese_to_phonemes(item)
@@ -60,5 +47,4 @@ class vits_tts_cn(DSSO_SERVER):
         binary_stream = audio.tobytes()
         encoded_audio = base64.b64encode(binary_stream).decode()
         output_map['audio_data'] = encoded_audio
-        output_map['state'] = 'finished'
         return output_map,True

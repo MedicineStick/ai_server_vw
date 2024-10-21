@@ -111,6 +111,9 @@ class ServerConfig:
         self.sam1_model_type = config["sam1_model_type"]
 
 
+        self.cos_uploader_mode = config["cos_uploader_mode"]
+
+
         
         
 

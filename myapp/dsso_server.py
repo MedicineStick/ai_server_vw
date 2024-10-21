@@ -3,7 +3,7 @@
 from typing import Dict
 import pynvml
 from abc import ABC, abstractmethod
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 def get_gpu_mem_info(gpu_id:int)->(float,float,float):
     pynvml.nvmlInit()
     if gpu_id<0 or gpu_id>=pynvml.nvmlDeviceGetCount():

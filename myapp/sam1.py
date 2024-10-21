@@ -2,10 +2,9 @@ import torch
 import numpy as np
 from segment_anything import sam_model_registry, SamPredictor
 from myapp.dsso_server import DSSO_SERVER
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 from typing import Dict
-from diffusers.utils import load_image
-from myapp.dsso_util import load_image_cv2,CosUploader
+from models.dsso_util import load_image_cv2,CosUploader
 
 class Sam1(DSSO_SERVER):
     def __init__(self,conf:ServerConfig):

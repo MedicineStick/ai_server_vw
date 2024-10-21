@@ -1,6 +1,6 @@
 from typing import Dict
 from myapp.dsso_server import DSSO_SERVER 
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 from myapp.video_generation import Video_Generation
 from concurrent.futures import ThreadPoolExecutor
 

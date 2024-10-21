@@ -21,18 +21,6 @@ from myapp.sam2 import Sam2
 print("--->Loading Sam1...")
 from myapp.sam1 import Sam1
 
-"""
-print("--->Loading AI_Meeting ...")
-from myapp.ai_meeting import AI_Meeting
-print("--->Loading TTS EN...")
-from myapp.vits_tts_en import vits_tts_en
-print("--->Loading TTS CN...")
-from myapp.vits_tts_cn  import vits_tts_cn
-print("--->Loading Online_ASR ...")
-from myapp.online_asr import Online_ASR
-print("--->Loading Online_ASR_webm ...")
-from myapp.online_asr_webm import Online_ASR_webm
-"""
 
 import json
 import torch
@@ -41,34 +29,79 @@ import websockets
 import time
 import concurrent.futures
 import logging
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 
+from models.ai_classification_model import AiClassificationModel
+from models.warning_light_model import WarningLightModel
+from models.whisper_large import WhisperLarge
+from models.whisper_small import WhisperSmall
+from models.forgery_detection_model import ForgeryDetectionModel
+from models.mbart_translation_model import MbartTranslationModel
+from models.vits_tts_cn import VitsTTSCN
+from models.vits_tts_en import VitsTTSEN
+from models.esr_gan import ESRGan
+from models.dsso_util import CosUploader
 
+conf_path = "./configs/conf.yaml"
 
-global_conf = ServerConfig("./myapp/conf.yaml")
+global_conf = ServerConfig(conf_path)
+
+model_dict = {
+    "AiClassificationModel" : AiClassificationModel(global_conf),
+    "WarningLightModel" : WarningLightModel(global_conf),
+    "WhisperLarge":WhisperLarge(global_conf),
+    "WhisperSmall":WhisperSmall(global_conf),
+    "ForgeryDetectionModel":ForgeryDetectionModel(global_conf),
+    "MbartTranslationModel":MbartTranslationModel(global_conf),
+    "VitsTTSCN":VitsTTSCN(global_conf),
+    "VitsTTSEN":VitsTTSEN(global_conf),
+    "ESRGan":ESRGan(global_conf),
+    "uploader":CosUploader(global_conf.cos_uploader_mode)
+    }
+
 Model_name_dict = {
-                "warning_light_detection":warning_light_detection(global_conf),
-                #"ai_meeting_assistant":AI_Meeting(global_conf),
-                "ai_meeting_assistant_chatbot":AI_Meeting_Chatbot(global_conf),
-                "ai_classification":AI_Classification(global_conf),
-                "forgery_detection":forgery_detection(global_conf),
-                "super_resolution":Super_Resolution(global_conf),
-                #"online_asr":None,
-                #"online_asr_webm":None,
-                #"vits_tts_en":vits_tts_en(global_conf),
-                #"vits_tts_cn":vits_tts_cn(global_conf),
-                "translation":mbart_translation(global_conf),
+                "warning_light_detection":warning_light_detection(
+                    global_conf,
+                    model_dict["WarningLightModel"]
+                    ),
+
+                "ai_meeting_assistant_chatbot":AI_Meeting_Chatbot(
+                    global_conf,
+                    asr_model=model_dict["WhisperLarge"],
+                    translation_model = model_dict["MbartTranslationModel"],
+                    uploader=model_dict["uploader"]
+                    ),
+
+                "ai_classification":AI_Classification(
+                    global_conf,
+                    model_dict["AiClassificationModel"]
+                    ),
+
+                "forgery_detection":forgery_detection(
+                    global_conf,
+                    model_dict["ForgeryDetectionModel"]
+                    ),
+
+                "super_resolution":Super_Resolution(
+                    global_conf,
+                    model=model_dict["ESRGan"],
+                    uploader=model_dict["uploader"]
+                    ),
+                "translation":mbart_translation(
+                    global_conf,
+                    model=model_dict["MbartTranslationModel"],
+                    ),
+                    
                 "Video_Generation_Interface":Video_Generation_Interface(global_conf),
                 "super_resulution_video":Super_Resolution_Video(global_conf),
-                "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(global_conf),
+                "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
+                    global_conf,
+                    model_dict["WhisperSmall"],
+                    translation_model = model_dict["MbartTranslationModel"],
+                    ),
                 "sam2":Sam2(global_conf),
                 "sam1":Sam1(global_conf)
             }
-
-Ws_Model_name_set = set()
-Ws_Model_name_set.add("online_asr")
-Ws_Model_name_set.add("online_asr_webm")
-
 
 time_blocker = 10    
 
@@ -109,10 +142,8 @@ async def start_server(websocket, path):
     with torch.no_grad(): 
         global pool,global_conf,Model_name_dict
         loop = asyncio.get_running_loop()
-        global_conf = ServerConfig("./myapp/conf.yaml")
+        global_conf = ServerConfig(conf_path)
         print("--->Connection from {} ".format(websocket.remote_address))
-        asr_model = None
-        asr_model_webm = None
         task_id_asr = websocket.remote_address[0]+str(websocket.remote_address[1])
         while True:
             message = await websocket.recv()

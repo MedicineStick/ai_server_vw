@@ -1,4 +1,4 @@
-from myapp.dsso_util import CosUploader
+from models.dsso_util import CosUploader
 import cv2
 import glob
 import mimetypes
@@ -19,7 +19,7 @@ self_device = torch.device(self_gpu_id)
 from typing import Dict
 import urllib
 from myapp.dsso_server import DSSO_SERVER 
-from myapp.server_conf import ServerConfig
+from models.server_conf import ServerConfig
 
 try:
     import ffmpeg

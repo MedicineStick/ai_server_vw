@@ -1,15 +1,11 @@
 import sys
 sys.path.append("./third_party/ultralytics-main/")
-
-from ultralytics import YOLO
-import torch
 from typing import Dict
 from myapp.dsso_server import DSSO_SERVER 
-from myapp.server_conf import ServerConfig
-from diffusers.utils import load_image
+from models.server_conf import ServerConfig
+from models.dsso_model import DSSO_MODEL
 
-
-def get_VOC_Decription_MAP_1()->(dict,dict):
+def get_VOC_Decription_MAP_1()->tuple[dict,dict]:
 
     VOC_CLASSES_MAP = {}
     file_ = open("./checkpoints/warning_light/label_map.txt",mode='r')
@@ -50,14 +46,14 @@ def get_VOC_Decription_MAP_1()->(dict,dict):
 
 
 class warning_light_detection(DSSO_SERVER):
-    def __init__(self,conf:ServerConfig):
+    def __init__(self,
+                 conf:ServerConfig,
+                 model:DSSO_MODEL
+                 ):
         super().__init__()
         print("--->initialize warning_light_detection...")
         self.conf = conf
-        self.device = torch.device(self.conf.gpu_id)
-        self._need_mem = self.conf.warning_light_detection_mem
-        self.model = YOLO(self.conf.warning_light_detection_path).to(self.device)  # load an official model
-        
+        self.model = model
 
     def dsso_init(self,req:Dict = None)->bool:
         pass
@@ -70,20 +66,17 @@ class warning_light_detection(DSSO_SERVER):
             self.VOC_CLASSES_LIST.append(str(i)) 
 
     def dsso_forward(self, request: Dict) -> Dict:
-        with torch.no_grad():
-            output_map = {}
-            image_url = request["image_url"]
-            output_map['output'] = {}
-            results = self.model.predict(source=load_image(image_url), save=False)
-            VOC_CLASSES_MAP,VOC_Decription_MAP_1 = get_VOC_Decription_MAP_1()
-            for r in results:
-                boxes = r.boxes
-                for box in boxes:
-                    if box.conf.cpu().numpy()[0]>self.conf.warning_light_detection_threshold:
-                        #b = list(box.xyxy[0].cpu().numpy())
-                        light = int(box.cls.cpu().numpy()[0])
-                        #conf_out = float(box.conf.cpu().numpy()[0])
-                        output_map['output'][VOC_CLASSES_MAP[light]] = VOC_Decription_MAP_1[VOC_CLASSES_MAP[light]]
-            torch.cuda.empty_cache()
-            output_map['state'] = 'finished'
-            return output_map,True
+        output_map = {}
+        output_map['output'] = {}
+        results = self.model.predict_func(image_url = request["image_url"])
+        VOC_CLASSES_MAP,VOC_Decription_MAP_1 = get_VOC_Decription_MAP_1()
+        for r in results:
+            boxes = r.boxes
+            for box in boxes:
+                if box.conf.cpu().numpy()[0]>self.conf.warning_light_detection_threshold:
+                    #b = list(box.xyxy[0].cpu().numpy())
+                    light = int(box.cls.cpu().numpy()[0])
+                    #conf_out = float(box.conf.cpu().numpy()[0])
+                    output_map['output'][VOC_CLASSES_MAP[light]] = VOC_Decription_MAP_1[VOC_CLASSES_MAP[light]]
+        output_map['state'] = 'finished'
+        return output_map,True

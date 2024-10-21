@@ -2,4 +2,7 @@ temp/results/ai_meeting_results/
 myapp/__pycache__/
 logs/
 temp/
+checkpoints/
+node_modules/
+models/__pycache__/
 
