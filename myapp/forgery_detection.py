@@ -110,7 +110,7 @@ class forgery_detection(DSSO_SERVER):
             print(len(image_list),n_pitch)
             for i in range(0,n_pitch):
                 for j in range(0,n_pitch):
-                    results = self.model.predict_func(image_url = image_list[i*n_pitch+j])
+                    results = self.model.predict_func_delay(image_url = image_list[i*n_pitch+j])
                     for r in results:
                         boxes = r.boxes
                         for box in boxes:

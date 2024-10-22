@@ -68,7 +68,7 @@ class warning_light_detection(DSSO_SERVER):
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
         output_map['output'] = {}
-        results = self.model.predict_func(image_url = request["image_url"])
+        results = self.model.predict_func_delay(image_url = request["image_url"])
         VOC_CLASSES_MAP,VOC_Decription_MAP_1 = get_VOC_Decription_MAP_1()
         for r in results:
             boxes = r.boxes

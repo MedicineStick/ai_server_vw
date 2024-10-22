@@ -25,6 +25,6 @@ class AI_Classification(DSSO_SERVER):
 
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
-        output_map["output"] = self.model.predict_func(image_url = request["image_url"])
+        output_map["output"] = self.model.predict_func_delay(image_url = request["image_url"])
         output_map['state'] = 'finished'
         return output_map,True

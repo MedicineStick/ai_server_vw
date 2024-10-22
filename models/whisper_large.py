@@ -8,7 +8,7 @@ import whisper
 
 class WhisperLarge(DSSO_MODEL):
     def __init__(self, conf:ServerConfig):
-        super().__init__()
+        super().__init__(time_blocker=conf.time_blocker)
         device = torch.device(conf.gpu_id)
         self.asr_model = whisper.load_model(
                 name=conf.ai_meeting_whisper_model_name,

@@ -112,6 +112,7 @@ class ServerConfig:
 
 
         self.cos_uploader_mode = config["cos_uploader_mode"]
+        self.time_blocker = config["time_blocker"]
 
 
         

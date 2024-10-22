@@ -10,7 +10,7 @@ from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
 
 class MbartTranslationModel(DSSO_MODEL):
     def __init__(self, conf:ServerConfig):
-        super().__init__()
+        super().__init__(time_blocker=conf.time_blocker)
         self.device = torch.device(conf.gpu_id)
         self.model = MBartForConditionalGeneration.from_pretrained(conf.translation_model_path).to(self.device)
         self.tokenizer = MBart50TokenizerFast.from_pretrained(conf.translation_model_path)

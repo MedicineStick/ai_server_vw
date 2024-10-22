@@ -636,7 +636,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                 for i in tqdm(range(0,len(output_tensors))):
                     #output_tensors.append(cut_waveform.squeeze(0))
                     tensor_ = output_tensors[i].squeeze(0)
-                    result = self.asr_model.predict_func(
+                    result = self.asr_model.predict_func_delay(
                         audio = tensor_,
                         word_timestamps=True,
                         language=self.conf.ai_meeting_language,
@@ -654,7 +654,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
             else:
                 for i in tqdm(range(0,len(output_tensors))):
                     tensor_ = output_tensors[i].squeeze(0)
-                    result = self.asr_model.predict_func(
+                    result = self.asr_model.predict_func_delay(
                         audio = tensor_,
                         word_timestamps=True,
                         beam_size = self.conf.ai_meeting_beam_size
@@ -778,7 +778,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
 
                 for i in range(0,len(self.global_result['diarization_result'])):
 
-                    result = self.mbart_translation_model.predict_func(
+                    result = self.mbart_translation_model.predict_func_delay(
                         task = request_trans["task"],
                         text = self.global_result['diarization_result'][i]['text'])
                     
@@ -789,7 +789,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                 request_trans["task"] = 'zh2en'
                 for i in range(0,len(self.global_result['diarization_result'])):
 
-                    result = self.mbart_translation_model.predict_func(
+                    result = self.mbart_translation_model.predict_func_delay(
                         task = request_trans["task"],
                         text = self.global_result['diarization_result'][i]['text'])
                     self.global_result['diarization_result'][i]["trans"] = result.strip()

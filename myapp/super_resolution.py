@@ -27,7 +27,7 @@ class Super_Resolution(DSSO_SERVER):
 
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
-        output = self.model.predict_func(image_url = request["image_url"])
+        output = self.model.predict_func_delay(image_url = request["image_url"])
         url1 = self.uploader.upload_image(output["image1"])
         url2 = self.uploader.upload_image(output["image2"])
         output_map["output_image_url"] = url1

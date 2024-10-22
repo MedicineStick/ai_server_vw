@@ -8,8 +8,9 @@ import whisper
 
 class WhisperSmall(DSSO_MODEL):
     def __init__(self, conf:ServerConfig):
-        super().__init__()
+        super().__init__(time_blocker=conf.time_blocker)
         device = torch.device(conf.gpu_id)
+        self.if_available = True
         self.conf = conf
         self.asr_model = whisper.load_model(
                 name=conf.realtime_asr_whisper_model_name,

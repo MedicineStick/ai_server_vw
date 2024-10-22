@@ -260,7 +260,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                         if request["language_code"]=="zh":
                             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
 
-                            result = self.asr_model.predict_func(
+                            result = self.asr_model.predict_func_delay(
                                 audio = valid_tensor,
                                 language=request['language_code'],
                                 initial_prompt=initial_prompt,
@@ -269,7 +269,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                             )
 
                         else:
-                            result = self.asr_model.predict_func(
+                            result = self.asr_model.predict_func_delay(
                                     audio = valid_tensor, 
                                     language=request['language_code'],
                                     beam_size = self.realtime_asr_beam_size,
@@ -320,14 +320,14 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                 if result[i]["refactoring"]:
                     if language_code=="en":
 
-                        output_trans = self.mbart_translation_model.predict_func(
+                        output_trans = self.mbart_translation_model.predict_func_delay(
                             task = 'en2zh',
                             text = result[i]["output"]
                         )
                         result[i]["trans"] = output_trans.strip()
                     elif language_code=="zh":
 
-                        output_trans = self.mbart_translation_model.predict_func(
+                        output_trans = self.mbart_translation_model.predict_func_delay(
                             task = 'zh2en',
                             text = result[i]["output"]
                         )

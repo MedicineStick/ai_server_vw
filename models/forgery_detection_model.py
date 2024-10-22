@@ -9,7 +9,7 @@ from ultralytics import YOLO
 
 class ForgeryDetectionModel(DSSO_MODEL):
     def __init__(self, conf:ServerConfig):
-        super().__init__()
+        super().__init__(time_blocker=conf.time_blocker)
         device = torch.device(conf.gpu_id)
         self.model = YOLO(conf.forgery_detection_path).to(device)
 

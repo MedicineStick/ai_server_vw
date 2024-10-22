@@ -13,7 +13,7 @@ sys.path.pop()
 
 class VitsTTSCN(DSSO_MODEL):
     def __init__(self,conf:ServerConfig):
-        super().__init__()
+        super().__init__(time_blocker=conf.time_blocker)
         print("--->initialize VitsTTSCN...")
         self.conf = conf
         self.device = torch.device(self.conf.gpu_id)
