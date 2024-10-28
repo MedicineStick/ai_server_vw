@@ -20,6 +20,8 @@ print("--->Loading Sam2...")
 from myapp.sam2 import Sam2
 print("--->Loading Sam1...")
 from myapp.sam1 import Sam1
+print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
+from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 
 
 import json
@@ -40,6 +42,7 @@ from models.mbart_translation_model import MbartTranslationModel
 from models.vits_tts_cn import VitsTTSCN
 from models.vits_tts_en import VitsTTSEN
 from models.esr_gan import ESRGan
+from models.silero_vad import Silero_VAD
 from models.dsso_util import CosUploader
 
 conf_path = "./configs/conf.yaml"
@@ -56,7 +59,9 @@ model_dict = {
     "VitsTTSCN":VitsTTSCN(global_conf),
     "VitsTTSEN":VitsTTSEN(global_conf),
     "ESRGan":ESRGan(global_conf),
-    "uploader":CosUploader(global_conf.cos_uploader_mode)
+    "silero_vad":Silero_VAD(global_conf),
+    "uploader":CosUploader(global_conf.cos_uploader_mode),
+
     }
 
 Model_name_dict = {
@@ -69,7 +74,8 @@ Model_name_dict = {
                     global_conf,
                     asr_model=model_dict["WhisperLarge"],
                     translation_model = model_dict["MbartTranslationModel"],
-                    uploader=model_dict["uploader"]
+                    vad_model=model_dict["silero_vad"],
+                    uploader=model_dict["uploader"],
                     ),
 
                 "ai_classification":AI_Classification(
@@ -97,10 +103,16 @@ Model_name_dict = {
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
                     model_dict["WhisperSmall"],
+                    vad_model=model_dict["silero_vad"],
                     translation_model = model_dict["MbartTranslationModel"],
                     ),
                 "sam2":Sam2(global_conf),
-                "sam1":Sam1(global_conf)
+                "sam1":Sam1(global_conf),
+                "realtime_asr_whisper_chatbot":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
+                    global_conf,
+                    asr_model = model_dict["WhisperSmall"],
+                    vad_model=model_dict["silero_vad"],
+                    )
             }
 
 time_blocker = 10    
@@ -156,7 +168,7 @@ async def start_server(websocket, path):
                     print("--->Can't recognize model name : {} \n".format(model_name))
                     break
                 else:
-                    if model_name=="realtime_asr_whisper":
+                    if  "realtime" in model_name :
                         message_dict["task_id"] = task_id_asr
                         response, stop = await loop.run_in_executor(pool, realtime_asr_whisper_inference, message_dict,model_name)
                         if response["if_send"]:

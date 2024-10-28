@@ -114,6 +114,10 @@ class ServerConfig:
         self.cos_uploader_mode = config["cos_uploader_mode"]
         self.time_blocker = config["time_blocker"]
 
+        self.realtime_asr_max_length_ms_chatbot = config["realtime_asr_max_length_ms_chatbot"]
+        self.realtime_asr_min_silence_duration_ms_chatbot = config["realtime_asr_min_silence_duration_ms_chatbot"]
+        self.realtime_asr_adaptive_thresholding_chatbot = config["realtime_asr_adaptive_thresholding_chatbot"]
+
 
         
         

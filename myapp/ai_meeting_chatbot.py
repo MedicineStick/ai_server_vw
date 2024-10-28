@@ -1,7 +1,7 @@
 from typing import Dict
 from myapp.dsso_server import DSSO_SERVER
 from models.server_conf import ServerConfig
-from models.dsso_util import audio_preprocess,get_speech_timestamps_silero_vad,process_timestamps,trim_audio
+from models.dsso_util import audio_preprocess,process_timestamps,trim_audio
 import os
 import torch
 import torch.onnx
@@ -10,7 +10,6 @@ import os
 import sys
 import urllib3
 sys.path.append("./third_party/")
-import whisper
 from tqdm import tqdm
 #from modelscope import  AutoTokenizer
 from omegaconf import OmegaConf
@@ -22,7 +21,6 @@ import urllib.request
 import logging
 import shutil
 from models.dsso_model import DSSO_MODEL
-from myapp.mbart_translation import mbart_translation
 logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
@@ -35,6 +33,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         conf:ServerConfig,
         asr_model:DSSO_MODEL,
         translation_model:DSSO_MODEL,
+        vad_model:DSSO_MODEL,
         uploader:CosUploader
         ):
         print("--->initialize AI_Meeting_Chatbot...")
@@ -60,6 +59,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         print("--->Loading ASR model...")
         self.mbart_translation_model = translation_model
         self.asr_model = asr_model
+        self.vad_model = vad_model
 
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -607,10 +607,9 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                         sampling_rate_=self.conf.ai_meeting_supported_sampling_rate
                         )
         print('--->get_speech_timestamps_silero_vad...')
-        speech_timestamps = get_speech_timestamps_silero_vad(
-                    audio_file=self.resampled_wav,
-                    sampling_rate_=self.conf.ai_meeting_supported_sampling_rate,
-                    vad_dir_=self.conf.ai_meeting_vad_dir
+        speech_timestamps = self.vad_model.predict_func_delay(
+                    audio=self.resampled_wav,
+                    sampling_rate=self.conf.ai_meeting_supported_sampling_rate,
                     )
         print('--->process_timestamps...')
         speech_timestamps_list = process_timestamps(speech_timestamps)

@@ -23,6 +23,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             self,
             conf:ServerConfig,
             asr_model:DSSO_MODEL,
+            vad_model:DSSO_MODEL,
             translation_model:DSSO_MODEL,
             ):
         print("--->initialize Realtime_ASR_Whisper_Silero_Vad...")
@@ -41,23 +42,10 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         self.realtime_asr_gap_ms = self.conf.realtime_asr_gap_ms
         self.realtime_asr_beam_size = self.conf.realtime_asr_beam_size
         self.realtime_asr_min_silence_duration_ms = self.conf.realtime_asr_min_silence_duration_ms
+        self.vad_model = vad_model
 
-        print("Loading VAD model...")
-        model, utils = torch.hub.load(repo_or_dir=self.conf.ai_meeting_vad_dir,
-                                    model='silero_vad',
-                                    source='local',
-                                    force_reload=False,
-                                    onnx=True)
 
-        (get_speech_timestamps,
-        _,
-        read_audio,
-        _,
-        _) = utils
-        self.vad_model = model
-        self.get_speech_timestamps = get_speech_timestamps
         #/home/tione/notebook/lskong2/projects/ai_server_vw/third_party/silero-vad-master/utils_vad.py
-        self.read_audio = read_audio
         self.punctuation = set()
         self.punctuation.add('.')
         self.punctuation.add('!')
@@ -228,9 +216,8 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                 
                 valid_tensor = torch.zeros((0),dtype=torch.float)
                 
-                speech_timestamps = self.get_speech_timestamps(
-                    self.audio_tensors[request["task_id"]], 
-                    self.vad_model, 
+                speech_timestamps = self.vad_model.predict_func_delay(
+                    audio = self.audio_tensors[request["task_id"]], 
                     sampling_rate=self.realtime_asr_model_sample,
                     min_silence_duration_ms = self.realtime_asr_min_silence_duration_ms,
                     )
