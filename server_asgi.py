@@ -59,12 +59,12 @@ model_dict = {
     "VitsTTSCN":VitsTTSCN(global_conf),
     "VitsTTSEN":VitsTTSEN(global_conf),
     "ESRGan":ESRGan(global_conf),
-    "silero_vad":Silero_VAD(global_conf),
+    "SileroVAD":Silero_VAD(global_conf),
     "uploader":CosUploader(global_conf.cos_uploader_mode),
 
     }
 
-Model_name_dict = {
+project_name_dict = {
                 "warning_light_detection":warning_light_detection(
                     global_conf,
                     model_dict["WarningLightModel"]
@@ -74,7 +74,7 @@ Model_name_dict = {
                     global_conf,
                     asr_model=model_dict["WhisperLarge"],
                     translation_model = model_dict["MbartTranslationModel"],
-                    vad_model=model_dict["silero_vad"],
+                    vad_model=model_dict["SileroVAD"],
                     uploader=model_dict["uploader"],
                     ),
 
@@ -103,7 +103,7 @@ Model_name_dict = {
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
                     model_dict["WhisperSmall"],
-                    vad_model=model_dict["silero_vad"],
+                    vad_model=model_dict["SileroVAD"],
                     translation_model = model_dict["MbartTranslationModel"],
                     ),
                 "sam2":Sam2(global_conf),
@@ -111,7 +111,7 @@ Model_name_dict = {
                 "realtime_asr_whisper_chatbot":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
                     global_conf,
                     asr_model = model_dict["WhisperSmall"],
-                    vad_model=model_dict["silero_vad"],
+                    vad_model=model_dict["SileroVAD"],
                     )
             }
 
@@ -119,19 +119,19 @@ time_blocker = 10
 
 
 def http_inference(global_conf, message,model_name):
-    global Model_name_dict
+    global project_name_dict
     flag = False
     while True:
-        if Model_name_dict[model_name].if_available():
+        if project_name_dict[model_name].if_available():
             with torch.no_grad(): 
                 output = {}
-                Model_name_dict[model_name].dsso_reload_conf(global_conf)
-                Model_name_dict[model_name].dsso_init(message)
-                output,flag= Model_name_dict[model_name].dsso_forward_http(message)
+                project_name_dict[model_name].dsso_reload_conf(global_conf)
+                project_name_dict[model_name].dsso_init(message)
+                output,flag= project_name_dict[model_name].dsso_forward_http(message)
                 print("--->Finish processing {}...".format(model_name))
                 break
         else:
-            print("--->Model {} is a little bit of busy right now, please wait...".format(Model_name_dict[model_name]))
+            print("--->Model {} is a little bit of busy right now, please wait...".format(project_name_dict[model_name]))
             time.sleep(time_blocker)
 
     return output,flag
@@ -143,16 +143,16 @@ def realtime_asr_inference(message,online_asr_model):
     return output,stop
 
 def realtime_asr_whisper_inference(message,model_name):
-    global Model_name_dict
+    global project_name_dict
     output = {}
     with torch.no_grad():
-        #Model_name_dict[model_name].dsso_init(message)
-        output,flag= Model_name_dict[model_name].dsso_forward_http(message)
+        #project_name_dict[model_name].dsso_init(message)
+        output,flag= project_name_dict[model_name].dsso_forward_http(message)
         return output,flag
 
 async def start_server(websocket, path):
     with torch.no_grad(): 
-        global pool,global_conf,Model_name_dict
+        global pool,global_conf,project_name_dict
         loop = asyncio.get_running_loop()
         global_conf = ServerConfig(conf_path)
         print("--->Connection from {} ".format(websocket.remote_address))
@@ -164,7 +164,7 @@ async def start_server(websocket, path):
                 model_name = message_dict['project_name']
                 #message_dict["task_id"] = task_id
                 
-                if model_name not in Model_name_dict.keys():
+                if model_name not in project_name_dict.keys():
                     print("--->Can't recognize model name : {} \n".format(model_name))
                     break
                 else:
