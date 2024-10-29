@@ -43,8 +43,8 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             self,
             valid_tensor:torch.Tensor,
             request:dict,
-            ):
-        result = None
+            )->str:
+        result = ""
         if request["language_code"]=="zh":
             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
 
@@ -63,7 +63,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                     beam_size = self.realtime_asr_beam_size,
                     fp16=torch.cuda.is_available(),
                     )
-        return result
+        return result["text"].strip()
 
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -84,9 +84,18 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
     
     def dsso_forward(self, request):
         
-        if_send = False
+        if_send = True
+        if_record = False
+        current_length = 0.0
+        speech_timestamps = None
         result = ""
-        output = {"key":{},"if_send":if_send}
+        output = {
+            "text":"",
+            "record":if_record,
+            "if_send":if_send,
+            "audio_length":current_length,
+            "speech_timestamps":speech_timestamps,
+            }
         #print(request)
         if request["task_id"]==None:
             return output,True
@@ -99,20 +108,18 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
 
 
         if request['state'] == "start":
-            return {"key":self.output_table[request["task_id"]],"if_send":if_send},False
+            return output,False
+        
         elif request['state'] == 'finished':
-            #temp = self.output_table[request["task_id"]]
-            #self.output_table.pop(request["task_id"])
-
-            return {"key":self.output_table[request["task_id"]],"if_send":True},True
+            output["if_send"] = True
+            return output,True
+        
         elif request['state'] == 'await':
-            
-            return {"key":self.output_table[request["task_id"]],"if_send":False},True
+            return output,True
+        
         else:
             decoded_audio = base64.b64decode(request['audio_data'])
-
             audio_samples = np.frombuffer(decoded_audio, dtype=np.int16).astype(np.float32) / 32768.0
-            
             # Convert the NumPy array to a PyTorch tensor
             audio_tensor = torch.from_numpy(audio_samples).float()
             #torch.Size([4096])
@@ -129,56 +136,51 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                 )
             
             # total length
-            current_length = self.audio_tensors[request["task_id"]].shape[0]/self.realtime_asr_model_sample*1000
+            current_length = self.audio_tensors[request["task_id"]].shape[0]/self.realtime_asr_model_sample
 
 
 
-            if current_length>=self.realtime_asr_max_length_ms_chatbot:
+            if current_length>=self.realtime_asr_max_length_ms_chatbot/1000:
                 result = self.asr_forward(self.audio_tensors[request["task_id"]],request)
+                self.audio_tensors[request["task_id"]] = torch.zeros((0),dtype=torch.float)
+                if_send = True
+                audio_length = current_length
 
-            elif  current_length>=self.realtime_asr_adaptive_thresholding_chatbot:
+            elif  current_length>=self.realtime_asr_adaptive_thresholding_chatbot/1000:
 
-                valid_tensor = torch.zeros((0),dtype=torch.float)
                 speech_timestamps = self.vad_model.predict_func_delay(
                     audio = self.audio_tensors[request["task_id"]], 
                     sampling_rate=self.realtime_asr_model_sample,
                     min_silence_duration_ms = self.realtime_asr_min_silence_duration_ms_chatbot,
                     return_seconds = True,
                     )
-                print(speech_timestamps)
-                """"""
-                speech_timestamps_list = process_timestamps(speech_timestamps)
-                if len(speech_timestamps_list)>0:   
-                    if speech_timestamps_list[-1][1]/self.realtime_asr_model_sample+self.realtime_asr_gap_ms >= self.audio_tensors[request["task_id"]].shape[0]/self.realtime_asr_model_sample:
-                        speech_timestamps_list.pop()
-                        if len(speech_timestamps_list)>0:
-                           
-                           temp_tensor = self.audio_tensors[request["task_id"]][speech_timestamps_list[-1][1]:].clone()
-                           
-                           valid_tensor = self.audio_tensors[request["task_id"]][:speech_timestamps_list[-1][1]].clone()
 
-                           self.audio_tensors[request["task_id"]] = temp_tensor
+                if len(speech_timestamps)>0:
+                    last_active_point =  speech_timestamps[-1]["end"]
+                    
+                    if current_length-last_active_point>= self.realtime_asr_adaptive_thresholding_chatbot/1000:
+
+                        valid_tensor = self.audio_tensors[request["task_id"]][:]
+                        self.audio_tensors[request["task_id"]] = torch.zeros((0),dtype=torch.float)
+
+                        if valid_tensor.shape[0]==0:
+                            pass
                         else:
-                           pass
-
-                    else:
-
-                        valid_tensor = self.audio_tensors[request["task_id"]][:speech_timestamps_list[-1][1]]
-                        self.audio_tensors[request["task_id"]] = self.audio_tensors[request["task_id"]][speech_timestamps_list[-1][1]:].clone()
-
-                    if valid_tensor.shape[0]==0:
-                        pass
-                    else:
-                        result = self.asr_forward(valid_tensor,request)
-                        if_send = True
+                            result = self.asr_forward(valid_tensor,request)
+                            if_send = True
+                            
                 else:
                     pass
             else:
                 pass
-            
+            output["text"] = result
+            output["if_send"] = if_send
+            output["audio_length"] = current_length
+            output["speech_timestamps"] = speech_timestamps
+            return output,False
         
 
-        return {"key":result,"if_send":if_send},False
+        
 
 
    

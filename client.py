@@ -18,12 +18,12 @@ import wave
 import base64
 import sys
 import asyncio
-from models.server_conf import ServerConfig
+
 import re
 import numpy as np 
 from scipy.io.wavfile import write
-WS_URL = 'ws://localhost:9501/ws'
-from typing import Any
+WS_URL = 'ws://172.27.11.12:9501/ws'  # Replace with your WebSocket URL
+import pyaudio
 
 def inner_func(audio:int,name:str):
     print(audio)
@@ -80,6 +80,7 @@ def test3():
 
 
 def test2():
+    from models.server_conf import ServerConfig
     from myapp.ai_meeting_chatbot import AI_Meeting_Chatbot
     data = {"project_name":"ai_meeting_assistant_chatbot",
             "task_id":"fia967c_2024_06_2517_21_39_165_d",
@@ -101,6 +102,7 @@ def test2():
 
 def test1():
     from myapp.vits_tts_en import vits_tts
+    from models.server_conf import ServerConfig
     data = {"project_name":"vits_tts",
             "text":"The forms of printed letters should be beautiful, and that their arrangement on the page should be reasonable and a help to the shapeliness of the letters themselves.",
             "gender":1,  #0 woman, 1 man
@@ -250,6 +252,7 @@ def ai_meeting_chatbot_offline():
             "trans":1 
             }
     from myapp.ai_meeting_chatbot import AI_Meeting_Chatbot
+    from models.server_conf import ServerConfig
     global_conf = ServerConfig("./myapp/conf.yaml")
     model = AI_Meeting_Chatbot(global_conf)
     model.dsso_init(data)
@@ -522,6 +525,7 @@ def chat_with_bot(prompt:str)->dict:
 
 def video_generation_offline():
     from myapp.video_generation_interface import Video_Generation_Interface
+    from models.server_conf import ServerConfig
     global_conf = ServerConfig("./myapp/conf.yaml")
     model = Video_Generation_Interface(global_conf)
     
@@ -787,6 +791,7 @@ def test_sam1():
             'image_url':'temp/20241009103740.jpg',
             }
     from myapp.sam1 import Sam1
+    from models.server_conf import ServerConfig
     global_conf = ServerConfig("./myapp/conf.yaml")
     model  = Sam1(global_conf)
     model.dsso_init()
@@ -879,7 +884,7 @@ async def realtime_asr_en_chatbot():
 
         # wf = wave.open('/home/tione/notebook/lskong2/projects/2.tingjian/test_set/tesla_autopilot.wav', "rb")
         # temp/1cdc7498c6d2b8dde71772e73e75af43.webm
-        wf = open('./temp/tesla_autopilot.mp3', "rb")
+        wf = open('./temp/tesla_autopilot.wav', "rb")
 
         sample_rate = 16000
         input = {"project_name": "realtime_asr_whisper_chatbot",
@@ -929,21 +934,71 @@ async def realtime_asr_en_chatbot():
             input['state'] = 'continue'
 
             await websocket.send(json.dumps(input))
-            # exit(0)
-            #response = await websocket.recv()
-            #responses = json.loads(response)
-            
-            #print(responses)
+            try:
+                # Await a response from the WebSocket with a timeout
+                response = await asyncio.wait_for(websocket.recv(), 1)
+                print("Received response:", response)
+            except asyncio.TimeoutError:
+                pass
+            except websockets.ConnectionClosed:
+                print("Connection closed")
 
         input['state'] = 'finished'
         await websocket.send(json.dumps(input))
         print(await websocket.recv())
 
+
+async def online_asr_en_microphone():
+    async with websockets.connect(WS_URL) as websocket:
+        sample_rate = 16000
+        input = {"project_name": "realtime_asr_whisper_chatbot",
+                 "language_code": 'en', #zh 
+                 "audio_data": None,  #和之前一样
+                 "state": "continue",
+                 "sample_rate": sample_rate,  # int
+                 "translation_task":"none" # en2zh/zh2en/none  ##翻译任务，英到中/中到英/不翻译随便传
+                 }
+        buffer_size = int(sample_rate)  # buffer size for 200ms
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paInt16,
+                        channels=1,
+                        rate=sample_rate,
+                        input=True,
+                        frames_per_buffer=buffer_size)
+
+        print("Recording...")
+
+        try:
+            while True:
+                data = stream.read(buffer_size)
+                encoded_audio = base64.b64encode(data).decode()
+                input['audio_data'] = encoded_audio
+                input['state'] = 'continue'
+
+                await websocket.send(json.dumps(input))
+                try:
+                    # Await a response from the WebSocket with a timeout
+                    response = await asyncio.wait_for(websocket.recv(), 1)
+                    print("Received response:", response)
+                except asyncio.TimeoutError:
+                    pass
+                except websockets.ConnectionClosed:
+                    print("Connection closed")
+        except KeyboardInterrupt:
+            input['state'] = 'finished'
+            await websocket.send(json.dumps(input))
+            print(await websocket.recv())
+        finally:
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        asyncio.run(realtime_asr_en())
+        asyncio.run(online_asr_en_microphone())
         #ai_meeting_chatbot_offline()
         #test_args()
         #vits_conversion()
