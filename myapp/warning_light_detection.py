@@ -4,7 +4,8 @@ from typing import Dict
 from myapp.dsso_server import DSSO_SERVER 
 from models.server_conf import ServerConfig
 from models.dsso_model import DSSO_MODEL
-
+import concurrent.futures.thread
+import asyncio
 def get_VOC_Decription_MAP_1()->tuple[dict,dict]:
 
     VOC_CLASSES_MAP = {}
@@ -48,12 +49,19 @@ def get_VOC_Decription_MAP_1()->tuple[dict,dict]:
 class warning_light_detection(DSSO_SERVER):
     def __init__(self,
                  conf:ServerConfig,
-                 model:DSSO_MODEL
+                 model:DSSO_MODEL,
+                 executor:concurrent.futures.thread.ThreadPoolExecutor
                  ):
         super().__init__()
         print("--->initialize warning_light_detection...")
+        self.executor = executor
         self.conf = conf
         self.model = model
+
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
 
     def dsso_init(self,req:Dict = None)->bool:
         pass
@@ -79,4 +87,4 @@ class warning_light_detection(DSSO_SERVER):
                     #conf_out = float(box.conf.cpu().numpy()[0])
                     output_map['output'][VOC_CLASSES_MAP[light]] = VOC_Decription_MAP_1[VOC_CLASSES_MAP[light]]
         output_map['state'] = 'finished'
-        return output_map,True
+        return output_map

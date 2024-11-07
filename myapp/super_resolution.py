@@ -3,21 +3,29 @@ from myapp.dsso_server import DSSO_SERVER
 from models.server_conf import ServerConfig
 from models.dsso_model import DSSO_MODEL
 from models.dsso_util import CosUploader
-
+import concurrent.futures.thread
+import asyncio
 class Super_Resolution(DSSO_SERVER):
     def __init__(
             self,
             conf:ServerConfig,
             model:DSSO_MODEL,
-            uploader:CosUploader
+            uploader:CosUploader,
+            executor:concurrent.futures.thread.ThreadPoolExecutor
             ):
         super().__init__()
         print("--->initialize Super_Resolution...")
+        self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.super_resolution_mem
         self.model = model
         self.uploader = uploader
-        
+    
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
+
     def dsso_init(self,message:Dict) -> bool:        
         pass
 
@@ -33,5 +41,5 @@ class Super_Resolution(DSSO_SERVER):
         output_map["output_image_url"] = url1
         output_map["download_url"] = url2
         output_map['state'] = 'finished'
-        return output_map,True
+        return output_map
  

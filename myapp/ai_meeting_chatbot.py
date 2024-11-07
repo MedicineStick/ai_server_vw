@@ -24,7 +24,8 @@ from models.dsso_model import DSSO_MODEL
 logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
-
+import concurrent.futures.thread
+import asyncio
 
 @torch.no_grad()
 class AI_Meeting_Chatbot(DSSO_SERVER):
@@ -34,10 +35,13 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         asr_model:DSSO_MODEL,
         translation_model:DSSO_MODEL,
         vad_model:DSSO_MODEL,
-        uploader:CosUploader
+        llm_model:DSSO_MODEL,
+        uploader:CosUploader,
+        executor:concurrent.futures.thread.ThreadPoolExecutor
         ):
         print("--->initialize AI_Meeting_Chatbot...")
         super().__init__()
+        self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.ai_meeting_mem
         self.global_result  = {}
@@ -60,15 +64,20 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         self.mbart_translation_model = translation_model
         self.asr_model = asr_model
         self.vad_model = vad_model
+        self.ai_meeting_llm_timeout  = self.conf.ai_meeting_llm_timeout
+        self.ai_meeting_retry_count = self.conf.ai_meeting_retry_count
+        self.llm_model = llm_model
+
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
 
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
-        
         self._need_mem = self.conf.ai_meeting_mem
         self.task_father_path = self.conf.ai_meeting_temp_path+'/'
         self.min_combine_sents_sec_sample= self.conf.ai_meeting_min_combine_sents_sec*self.conf.ai_meeting_supported_sampling_rate
-        
-        
 
     def dsso_init(self,req:Dict = None)->bool:
         if req["lang"] == "":
@@ -468,11 +477,12 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         def llm_forward_with_check(prompt,history,tokenizer,st,ed,responses:list,idx:int):
             if inner_check(tokenizer,prompt[st:ed],max_tokens):
                 print("--->chatting with LLM...")
-                try:
-                    response = self.chat_with_bot_timeout(prompt[st:ed])["content"]
-                except Exception as error:
-                    print('--->LLM ERROR: ', error)
-                    response = "LLM ERROR"
+                response = self.llm_model.predict_func_delay(
+                    prompt = prompt[st:ed],
+                    retry_count = self.ai_meeting_retry_count,
+                    timeout = self.ai_meeting_llm_timeout,
+                    count = 0,
+                    )
                 responses.append([idx,response])
             else:
                 mid = round((ed-st)/2+st)
@@ -872,4 +882,4 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
             self.online_asr_process(request)
         else :
             pass
-        return self.global_result,True
+        return self.global_result

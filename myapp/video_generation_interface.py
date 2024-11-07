@@ -33,4 +33,4 @@ class Video_Generation_Interface(DSSO_SERVER):
             output_map,flag = future.result()
         
     
-        return output_map,flag
+        return output_map

@@ -10,8 +10,8 @@ print("--->Loading AI_Meeting_Chatbot ...")
 from myapp.ai_meeting_chatbot import AI_Meeting_Chatbot
 print("--->Loading Mbart Translation...")
 from myapp.mbart_translation import mbart_translation
-print("--->Loading Video_Generation...")
-from myapp.video_generation_interface import Video_Generation_Interface
+#print("--->Loading Video_Generation...")
+#from myapp.video_generation_interface import Video_Generation_Interface
 print("--->Loading Super_Resolution_Video...")
 from myapp.super_resulution_video import Super_Resolution_Video
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
@@ -43,31 +43,41 @@ from models.vits_tts_cn import VitsTTSCN
 from models.vits_tts_en import VitsTTSEN
 from models.esr_gan import ESRGan
 from models.silero_vad import Silero_VAD
+from models.dsso_llm import DssoLLM
 from models.dsso_util import CosUploader
 
-conf_path = "./configs/conf.yaml"
+class WebSocketServer:
+    def __init__(self,
+                host='localhost',
+                port=9501,
+                max_workers=40,
+                conf_path = "./configs/conf.yaml"
+                ):
+        self.host = host
+        self.port = port
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        global_conf = ServerConfig(conf_path)
 
-global_conf = ServerConfig(conf_path)
+        model_dict = {
+            "AiClassificationModel" : AiClassificationModel(global_conf),
+            "WarningLightModel" : WarningLightModel(global_conf),
+            "WhisperLarge":WhisperLarge(global_conf),
+            "WhisperSmall":WhisperSmall(global_conf),
+            "ForgeryDetectionModel":ForgeryDetectionModel(global_conf),
+            "MbartTranslationModel":MbartTranslationModel(global_conf),
+            "VitsTTSCN":VitsTTSCN(global_conf),
+            "VitsTTSEN":VitsTTSEN(global_conf),
+            "ESRGan":ESRGan(global_conf),
+            "SileroVAD":Silero_VAD(global_conf),
+            "DssoLLM":DssoLLM(global_conf),
+            "uploader":CosUploader(global_conf.cos_uploader_mode),
 
-model_dict = {
-    "AiClassificationModel" : AiClassificationModel(global_conf),
-    "WarningLightModel" : WarningLightModel(global_conf),
-    "WhisperLarge":WhisperLarge(global_conf),
-    "WhisperSmall":WhisperSmall(global_conf),
-    "ForgeryDetectionModel":ForgeryDetectionModel(global_conf),
-    "MbartTranslationModel":MbartTranslationModel(global_conf),
-    "VitsTTSCN":VitsTTSCN(global_conf),
-    "VitsTTSEN":VitsTTSEN(global_conf),
-    "ESRGan":ESRGan(global_conf),
-    "SileroVAD":Silero_VAD(global_conf),
-    "uploader":CosUploader(global_conf.cos_uploader_mode),
-
-    }
-
-project_name_dict = {
+            }
+        self.project_name_dict = {
                 "warning_light_detection":warning_light_detection(
                     global_conf,
-                    model_dict["WarningLightModel"]
+                    model_dict["WarningLightModel"],
+                    executor=self.executor,
                     ),
 
                 "ai_meeting_assistant_chatbot":AI_Meeting_Chatbot(
@@ -75,131 +85,93 @@ project_name_dict = {
                     asr_model=model_dict["WhisperLarge"],
                     translation_model = model_dict["MbartTranslationModel"],
                     vad_model=model_dict["SileroVAD"],
+                    llm_model=model_dict["DssoLLM"],
                     uploader=model_dict["uploader"],
+                    executor=self.executor,
                     ),
 
                 "ai_classification":AI_Classification(
                     global_conf,
-                    model_dict["AiClassificationModel"]
+                    model_dict["AiClassificationModel"],
+                    executor=self.executor,
                     ),
 
                 "forgery_detection":forgery_detection(
                     global_conf,
-                    model_dict["ForgeryDetectionModel"]
+                    model_dict["ForgeryDetectionModel"],
+                    executor=self.executor,
                     ),
 
                 "super_resolution":Super_Resolution(
                     global_conf,
                     model=model_dict["ESRGan"],
-                    uploader=model_dict["uploader"]
+                    uploader=model_dict["uploader"],
+                    executor=self.executor,
                     ),
                 "translation":mbart_translation(
                     global_conf,
                     model=model_dict["MbartTranslationModel"],
+                    executor=self.executor,
                     ),
                     
-                "Video_Generation_Interface":Video_Generation_Interface(global_conf),
-                "super_resulution_video":Super_Resolution_Video(global_conf),
+                #"Video_Generation_Interface":Video_Generation_Interface(global_conf),
+                "super_resulution_video":Super_Resolution_Video(
+                    global_conf,
+                    executor=self.executor,
+                    ),
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
                     model_dict["WhisperSmall"],
                     vad_model=model_dict["SileroVAD"],
                     translation_model = model_dict["MbartTranslationModel"],
+                    executor=self.executor,
                     ),
-                "sam2":Sam2(global_conf),
-                "sam1":Sam1(global_conf),
+                "sam2":Sam2(global_conf,executor=self.executor),
+                "sam1":Sam1(global_conf,executor=self.executor),
                 "realtime_asr_whisper_chatbot":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
                     global_conf,
                     asr_model = model_dict["WhisperSmall"],
                     vad_model=model_dict["SileroVAD"],
+                    llm_model=model_dict["DssoLLM"],
+                    executor=self.executor,
                     )
-            }
+                }
 
-time_blocker = 10    
-
-
-def http_inference(global_conf, message,model_name):
-    global project_name_dict
-    flag = False
-    while True:
-        if project_name_dict[model_name].if_available():
-            with torch.no_grad(): 
-                output = {}
-                project_name_dict[model_name].dsso_reload_conf(global_conf)
-                project_name_dict[model_name].dsso_init(message)
-                output,flag= project_name_dict[model_name].dsso_forward_http(message)
-                print("--->Finish processing {}...".format(model_name))
-                break
-        else:
-            print("--->Model {} is a little bit of busy right now, please wait...".format(project_name_dict[model_name]))
-            time.sleep(time_blocker)
-
-    return output,flag
-
-def realtime_asr_inference(message,online_asr_model):
-    output = {}
-    with torch.no_grad():
-        output,stop = online_asr_model.dsso_forward(message)
-    return output,stop
-
-def realtime_asr_whisper_inference(message,model_name):
-    global project_name_dict
-    output = {}
-    with torch.no_grad():
-        #project_name_dict[model_name].dsso_init(message)
-        output,flag= project_name_dict[model_name].dsso_forward_http(message)
-        return output,flag
-
-async def start_server(websocket, path):
-    with torch.no_grad(): 
-        global pool,global_conf,project_name_dict
-        loop = asyncio.get_running_loop()
-        global_conf = ServerConfig(conf_path)
+    async def handler(self, websocket, path):
         print("--->Connection from {} ".format(websocket.remote_address))
-        task_id_asr = websocket.remote_address[0]+str(websocket.remote_address[1])
-        while True:
-            message = await websocket.recv()
+        async for message in websocket:
+            task_id_asr = websocket.remote_address[0]+str(websocket.remote_address[1])
+            #await self.asr_app.recognize_speech(websocket)
+            
             if isinstance(message, str) and 'project_name' in message:
                 message_dict = json.loads(message)
+                message_dict['task_id'] = task_id_asr
                 model_name = message_dict['project_name']
-                #message_dict["task_id"] = task_id
-                
-                if model_name not in project_name_dict.keys():
-                    print("--->Can't recognize model name : {} \n".format(model_name))
-                    break
+                if "asr" in model_name:
+                    pass
                 else:
-                    if  "realtime" in model_name :
-                        message_dict["task_id"] = task_id_asr
-                        response, stop = await loop.run_in_executor(pool, realtime_asr_whisper_inference, message_dict,model_name)
-                        if response["if_send"]:
-                            await websocket.send(json.dumps(response))
-                        else:
-                            pass
-                        if stop: break
-                    else:
-                        print("request: ",message_dict)
-                        response, _ = await loop.run_in_executor(pool, http_inference, global_conf, message_dict,model_name)
-                        print("response: ",response)
-                        await websocket.send(json.dumps(response))
-                        break
-
-async def start(max_workers:int,interface,port):
-    print('--->Start server! -_-')
-    global pool
-
-    logging.basicConfig(level=logging.INFO)
-    pool = concurrent.futures.ThreadPoolExecutor(max_workers)
-
-    async with websockets.serve(start_server, interface, port):
-        await asyncio.Future()
-
+                    print(message_dict)
+                await self.project_name_dict[model_name].asyn_forward(websocket,message_dict)
+            
+    async def start(self):
+        print('--->Start server! -_-')
+        async with websockets.serve(self.handler, self.host, self.port):
+            await asyncio.Future()  # Run forever
 
 if __name__ == '__main__':
     
+
     max_workers = 40
-    interface =  '0.0.0.0'
-    #port = int(sys.argv[1]) #9501
+    host =  '0.0.0.0'
     port = 9501
-    asyncio.run(start(max_workers,interface,port))
+    server = WebSocketServer(
+        host=host,
+        port=port,
+        max_workers=max_workers
+        )  
+    asyncio.run(server.start())
+
+    
+    
 
     

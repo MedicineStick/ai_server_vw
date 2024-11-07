@@ -4,6 +4,7 @@ from typing import Dict
 import pynvml
 from abc import ABC, abstractmethod
 from models.server_conf import ServerConfig
+import websockets
 def get_gpu_mem_info(gpu_id:int)->(float,float,float):
     pynvml.nvmlInit()
     if gpu_id<0 or gpu_id>=pynvml.nvmlDeviceGetCount():
@@ -27,7 +28,10 @@ def check_if_forward(mem:float,gpu_id:int)->bool:
         return True 
 
 class DSSO_SERVER(ABC):
-    def __init__(self):
+    def __init__(
+            self,
+            #websocket:websocketsW
+            ):
         super().__init__()
         self._need_mem = 0.0
         self._available = True
@@ -58,6 +62,10 @@ class DSSO_SERVER(ABC):
             self._need_mem = need_mem
         else:
             self._need_mem = 0.
+            
+    @abstractmethod
+    async def asyn_forward(self, websocket,message):
+        pass
 
     @abstractmethod
     def dsso_forward(self,req:Dict)->Dict:

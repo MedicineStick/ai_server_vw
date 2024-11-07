@@ -16,13 +16,19 @@ from tqdm import tqdm
 import logging  # OpenCV for image processing
 import shutil
 from diffusers.utils import load_image
-
+import concurrent.futures.thread
+import asyncio
 
 
 class Sam2(DSSO_SERVER):
-    def __init__(self,conf:ServerConfig):
+    def __init__(
+            self,
+            conf:ServerConfig,
+            executor:concurrent.futures.thread.ThreadPoolExecutor
+            ):
         print("--->initialize Sam2...")
         super().__init__()
+        self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.ai_classification_mem
         self.device = torch.device(self.conf.sam2_device_id)
@@ -45,13 +51,17 @@ class Sam2(DSSO_SERVER):
             self.uploader = None
             logging.info(f'no cos uploader found: {e}')
 
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
+
     def dsso_init(self,req:Dict = None)->bool:
         pass
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
         self.device = torch.device(self.conf.gpu_id)
-
 
     def dsso_forward(self, request: Dict) -> Dict:
         if request["sam2_task"]=="video":
@@ -162,4 +172,4 @@ class Sam2(DSSO_SERVER):
 
         output_map['video'] = self.uploader.upload_video(temp_masked_video)
         output_map['state'] = 'finished'
-        return output_map,True
+        return output_map

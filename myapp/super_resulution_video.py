@@ -20,7 +20,8 @@ from typing import Dict
 import urllib
 from myapp.dsso_server import DSSO_SERVER 
 from models.server_conf import ServerConfig
-
+import concurrent.futures.thread
+import asyncio
 try:
     import ffmpeg
 except ImportError:
@@ -350,9 +351,14 @@ def super_resolution_main(input_video:str,output_video:str):
 
 
 class Super_Resolution_Video(DSSO_SERVER):
-    def __init__(self,conf:ServerConfig):
+    def __init__(
+        self,
+        conf:ServerConfig,
+        executor:concurrent.futures.thread.ThreadPoolExecutor
+        ):
         super().__init__()
         print("--->initialize Super_Resolution...")
+        self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.super_resolution_mem
 
@@ -362,6 +368,11 @@ class Super_Resolution_Video(DSSO_SERVER):
             self.uploader = None
             logging.info(f'no cos uploader found: {e}')
         pass
+
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
 
     def dsso_init(self,message:Dict) -> bool:        
         try:
@@ -391,6 +402,6 @@ class Super_Resolution_Video(DSSO_SERVER):
         super_resolution_main(video,output_path)
 
         output_map['video'] = self.uploader.upload_video("samples/results/sample_0000_out.mp4")
-        return output_map,True
+        return output_map
 
 

@@ -4,7 +4,6 @@ import torch
 import base64
 from myapp.dsso_server import DSSO_SERVER
 from models.server_conf import ServerConfig
-from models.dsso_util import process_timestamps
 import torchaudio
 # https://github.com/snakers4/silero-vad/blob/master/examples/cpp/silero-vad-onnx.cpp
 # https://github.com/mozilla/DeepSpeech-examples/blob/r0.8/mic_vad_streaming/mic_vad_streaming.py
@@ -14,21 +13,24 @@ import sys
 sys.path.append("/home/tione/notebook/lskong2/projects/2.tingjian/")
 from models.dsso_model import DSSO_MODEL
 import torchaudio
-import re
-
+import concurrent.futures.thread
+import asyncio
 class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
     def __init__(
             self,
             conf:ServerConfig,
             asr_model:DSSO_MODEL,
             vad_model:DSSO_MODEL,
+            llm_model:DSSO_MODEL,
+            executor:concurrent.futures.thread.ThreadPoolExecutor
             ):
         print("--->initialize Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
         super().__init__()
+        self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.online_asr_mem
         self.model = None
-        self.audio_tensors:dict[str:torch.Tensor] = {}
+        self.task_tables:dict[str:dict] = {}
         self.output_table:dict[str:dict] = {}
         self.realtime_asr_model_sample = self.conf.realtime_asr_model_sample
         self.realtime_asr_gap_ms = self.conf.realtime_asr_gap_ms
@@ -38,7 +40,17 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         self.realtime_asr_adaptive_thresholding_chatbot = self.conf.realtime_asr_adaptive_thresholding_chatbot
         self.vad_model = vad_model
         self.asr_model = asr_model
+        self.llm_model = llm_model
+
+        self.realtime_asr_llm_timeout = self.conf.realtime_asr_llm_timeout
+        self.realtime_asr_retry_count = self.conf.realtime_asr_retry_count
     
+
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
+
     def asr_forward(
             self,
             valid_tensor:torch.Tensor,
@@ -72,50 +84,62 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
     def dsso_init(self,req:Dict = None)->bool:
         return True
     
-    def split_string(self,
-                    sentence:str,
-                    pattern:str
-                    ):
-        result = re.findall(rf'.+?{pattern}', sentence)
-        remaining_text = re.split(rf'{pattern}', sentence)[-1]
-        if remaining_text:
-            result.append(remaining_text)
-        return result
-    
+    def __execute_task(
+            self,
+            request:dict,
+            ):
+        trans_text = self.asr_forward(self.task_tables[request["task_id"]]["audio"],request)
+        self.task_tables[request["task_id"]]["audio"] = torch.zeros((0),dtype=torch.float)
+        response_text = self.llm_model.predict_func_delay(
+            prompt = trans_text,
+            retry_count = self.realtime_asr_retry_count,
+            timeout = self.realtime_asr_llm_timeout,
+            count = 0,
+            )
+        return trans_text,response_text
+
     def dsso_forward(self, request):
         
         if_send = True
         if_record = False
         current_length = 0.0
         speech_timestamps = None
-        result = ""
+        if_wait = False
+        response_text = ""
+        trans_text = ""
         output = {
-            "text":"",
+            "trans_text":trans_text,
+            "response_text":response_text,
             "record":if_record,
             "if_send":if_send,
             "audio_length":current_length,
             "speech_timestamps":speech_timestamps,
+            "if_wait":if_wait,
             }
         #print(request)
         if request["task_id"]==None:
-            return output,True
-        if request["task_id"] in self.audio_tensors.keys():
+            return output
+        if request["task_id"] in self.task_tables.keys():
             pass
         else:
-            self.audio_tensors[request["task_id"]] = torch.zeros((0),dtype=torch.float)
+            self.task_tables[request["task_id"]] = {
+                "audio":torch.zeros((0),dtype=torch.float),
+            }
+            
+            
             self.output_table[request["task_id"]] = []
 
 
 
         if request['state'] == "start":
-            return output,False
+            return output
         
         elif request['state'] == 'finished':
             output["if_send"] = True
-            return output,True
+            return output
         
         elif request['state'] == 'await':
-            return output,True
+            return output
         
         else:
             decoded_audio = base64.b64decode(request['audio_data'])
@@ -130,26 +154,26 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                 audio_tensor = resampler(audio_tensor)
             
             # concat the current segment to audio tensor table
-            self.audio_tensors[request["task_id"]] = torch.cat(
-                (self.audio_tensors[request["task_id"]],audio_tensor),
+            self.task_tables[request["task_id"]]["audio"] = torch.cat(
+                (self.task_tables[request["task_id"]]["audio"],audio_tensor),
                 dim=0
                 )
             
             # total length
-            current_length = self.audio_tensors[request["task_id"]].shape[0]/self.realtime_asr_model_sample
+            current_length = self.task_tables[request["task_id"]]["audio"].shape[0]/self.realtime_asr_model_sample
 
 
 
             if current_length>=self.realtime_asr_max_length_ms_chatbot/1000:
-                result = self.asr_forward(self.audio_tensors[request["task_id"]],request)
-                self.audio_tensors[request["task_id"]] = torch.zeros((0),dtype=torch.float)
+
+                if_wait = True
+                trans_text,response_text = self.__execute_task(request)
                 if_send = True
-                audio_length = current_length
 
             elif  current_length>=self.realtime_asr_adaptive_thresholding_chatbot/1000:
 
                 speech_timestamps = self.vad_model.predict_func_delay(
-                    audio = self.audio_tensors[request["task_id"]], 
+                    audio = self.task_tables[request["task_id"]]["audio"], 
                     sampling_rate=self.realtime_asr_model_sample,
                     min_silence_duration_ms = self.realtime_asr_min_silence_duration_ms_chatbot,
                     return_seconds = True,
@@ -160,24 +184,28 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                     
                     if current_length-last_active_point>= self.realtime_asr_adaptive_thresholding_chatbot/1000:
 
-                        valid_tensor = self.audio_tensors[request["task_id"]][:]
-                        self.audio_tensors[request["task_id"]] = torch.zeros((0),dtype=torch.float)
+                        valid_tensor = self.task_tables[request["task_id"]]["audio"][:]
+                        self.task_tables[request["task_id"]]["audio"] = torch.zeros((0),dtype=torch.float)
 
                         if valid_tensor.shape[0]==0:
                             pass
                         else:
-                            result = self.asr_forward(valid_tensor,request)
+                            if_wait = True
+                            trans_text,response_text = self.__execute_task(request)
                             if_send = True
                             
                 else:
                     pass
             else:
                 pass
-            output["text"] = result
+
+            output["trans_text"] = trans_text
+            output["response_text"] = response_text
             output["if_send"] = if_send
             output["audio_length"] = current_length
             output["speech_timestamps"] = speech_timestamps
-            return output,False
+            output["if_wait"] = if_wait
+            return output
         
 
         

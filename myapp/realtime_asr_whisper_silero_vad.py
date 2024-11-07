@@ -4,7 +4,6 @@ import torch
 import base64
 from myapp.dsso_server import DSSO_SERVER
 from models.server_conf import ServerConfig
-from myapp.mbart_translation import mbart_translation
 from typing import Any
 from models.dsso_util import process_timestamps
 import torchaudio
@@ -17,7 +16,8 @@ sys.path.append("/home/tione/notebook/lskong2/projects/2.tingjian/")
 from models.dsso_model import DSSO_MODEL
 import torchaudio
 import re
-
+import concurrent.futures.thread
+import asyncio
 class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
     def __init__(
             self,
@@ -25,9 +25,11 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             asr_model:DSSO_MODEL,
             vad_model:DSSO_MODEL,
             translation_model:DSSO_MODEL,
+            executor:concurrent.futures.thread.ThreadPoolExecutor
             ):
         print("--->initialize Realtime_ASR_Whisper_Silero_Vad...")
         super().__init__()
+        self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.online_asr_mem
         self.model = None
@@ -58,7 +60,12 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         self.pattern1 = f'[{"".join(re.escape(p) for p in self.punctuation)}]'
 
         self.asr_model = asr_model
-        
+
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
+
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
         self._need_mem = conf.forgery_detection_mem
@@ -177,7 +184,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
         output = {"key":{},"if_send":if_send}
         #print(request)
         if request["task_id"]==None:
-            return output,True
+            return output
 
         if request["task_id"] in self.audio_tensors.keys():
             pass
@@ -186,12 +193,12 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             self.output_table[request["task_id"]] = []
 
         if request['state'] == "start":
-            return {"key":self.output_table[request["task_id"]],"if_send":if_send},False
+            return {"key":self.output_table[request["task_id"]],"if_send":if_send}
         elif request['state'] == 'finished':
             #temp = self.output_table[request["task_id"]]
             #self.output_table.pop(request["task_id"])
 
-            return {"key":self.output_table[request["task_id"]],"if_send":True},True
+            return {"key":self.output_table[request["task_id"]],"if_send":True}
         else:
             decoded_audio = base64.b64decode(request['audio_data'])
 
@@ -293,7 +300,7 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
                     pass
         
 
-        return {"key":self.output_table[request["task_id"]],"if_send":if_send},False
+        return {"key":self.output_table[request["task_id"]],"if_send":if_send}
 
 
     def _translation_callback(

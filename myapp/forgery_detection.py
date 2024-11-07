@@ -1,6 +1,5 @@
 import sys
 sys.path.append("./third_party/ultralytics-main/")
-from ultralytics import YOLO
 import torch
 from PIL import Image
 from typing import Dict
@@ -10,7 +9,8 @@ from models.server_conf import ServerConfig
 from diffusers.utils import load_image
 from models.dsso_model import DSSO_MODEL
 from PIL import Image
-
+import concurrent.futures.thread
+import asyncio
 def split_image_pillow(img_src: str, pitch_size: int, img_b: str):
     output_images = []
     # Load the main image
@@ -81,14 +81,21 @@ class forgery_detection(DSSO_SERVER):
     def __init__(
         self,
         conf:ServerConfig,
-        model:DSSO_MODEL
+        model:DSSO_MODEL,
+        executor:concurrent.futures.thread.ThreadPoolExecutor
         ):
         print("--->initialize forgery_detection...")
         super().__init__()
+        self.executor = executor
         self.conf = conf
         self._need_mem = conf.forgery_detection_mem
         self.device = torch.device(self.conf.gpu_id)
         self.model = model
+    
+    async def asyn_forward(self, websocket,message):
+        import json
+        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        await websocket.send(json.dumps(response))
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -132,4 +139,4 @@ class forgery_detection(DSSO_SERVER):
                                     output_map['boxes'].append(box_temp)
             torch.cuda.empty_cache()
             output_map['state'] = 'finished'
-            return output_map,True
+            return output_map

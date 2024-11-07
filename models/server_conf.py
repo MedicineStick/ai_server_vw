@@ -119,6 +119,12 @@ class ServerConfig:
         self.realtime_asr_adaptive_thresholding_chatbot = config["realtime_asr_adaptive_thresholding_chatbot"]
 
 
+        self.ai_meeting_llm_timeout  = config["ai_meeting_llm_timeout"]
+        self.ai_meeting_retry_count = config["ai_meeting_retry_count"]
+        self.realtime_asr_llm_timeout = config["realtime_asr_llm_timeout"]
+        self.realtime_asr_retry_count = config["realtime_asr_retry_count"]
+
+
         
         
 

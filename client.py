@@ -146,7 +146,7 @@ def test():
 
 async def warning_detection1():
 
-    data = {"project_name":"warning_light_detection","image_url":"../6.DeepLearningModelServer/temp/1712561012318.png"}
+    data = {"project_name":"warning_light_detection","image_url":"./temp/isolation_warning_light_fake_2895.jpg"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -157,7 +157,7 @@ async def warning_detection1():
 
 async def forgery():
 
-    data = {"project_name":"forgery_detection","image_url":"../6.DeepLearningModelServer/temp/1712561012318.png"}
+    data = {"project_name":"forgery_detection","image_url":"../3.forgery_detection/temp/0.png"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -170,7 +170,7 @@ async def forgery():
 async def super_resolution():
 
 
-    data = {"project_name":"super_resolution","image_url":"../6.DeepLearningModelServer/temp/6.png"}
+    data = {"project_name":"super_resolution","image_url":"./temp/1.png"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -240,7 +240,7 @@ async def ai_meeting_chatbot():
 
 def ai_meeting_chatbot_offline():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_tesla_autopilot_0930",
+            "task_id":"lskong2_tesla_autopilot_1107",
             "audio_url":"./temp/tesla_autopilot.mp3",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
@@ -1047,6 +1047,8 @@ if __name__ =="__main__":
         asyncio.run(video_generation_connect())
     elif int(sys.argv[1]) ==22:
         asyncio.run(sam2())
+    elif int(sys.argv[1]) ==23:
+        asyncio.run(realtime_asr_en())
     
 
 
