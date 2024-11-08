@@ -12,10 +12,11 @@ class AI_Classification(DSSO_SERVER):
     def __init__(self,
                  conf:ServerConfig,
                  model:DSSO_MODEL,
-                 executor:concurrent.futures.thread.ThreadPoolExecutor
+                 executor:concurrent.futures.thread.ThreadPoolExecutor,
+                 time_blocker:int
                  ):
         print("--->initialize AI_Classification...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.model = model
         self.conf  = conf
         self.executor = executor

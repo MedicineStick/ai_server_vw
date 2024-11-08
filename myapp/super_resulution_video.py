@@ -354,9 +354,10 @@ class Super_Resolution_Video(DSSO_SERVER):
     def __init__(
         self,
         conf:ServerConfig,
-        executor:concurrent.futures.thread.ThreadPoolExecutor
+        executor:concurrent.futures.thread.ThreadPoolExecutor,
+        time_blocker:int,
         ):
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         print("--->initialize Super_Resolution...")
         self.executor = executor
         self.conf = conf

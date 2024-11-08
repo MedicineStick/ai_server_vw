@@ -25,10 +25,11 @@ class Realtime_ASR_Whisper_Silero_Vad(DSSO_SERVER):
             asr_model:DSSO_MODEL,
             vad_model:DSSO_MODEL,
             translation_model:DSSO_MODEL,
-            executor:concurrent.futures.thread.ThreadPoolExecutor
+            executor:concurrent.futures.thread.ThreadPoolExecutor,
+            time_blocker:int
             ):
         print("--->initialize Realtime_ASR_Whisper_Silero_Vad...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.online_asr_mem

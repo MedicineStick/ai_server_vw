@@ -9,9 +9,10 @@ class mbart_translation(DSSO_SERVER):
             self,
             conf:ServerConfig,
             model:DSSO_MODEL,
-            executor:concurrent.futures.thread.ThreadPoolExecutor
+            executor:concurrent.futures.thread.ThreadPoolExecutor,
+            time_blocker:int
             ):
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         print("--->initialize mbart_translation...")
         self.executor = executor
         self.conf = conf

@@ -24,10 +24,11 @@ class Sam2(DSSO_SERVER):
     def __init__(
             self,
             conf:ServerConfig,
-            executor:concurrent.futures.thread.ThreadPoolExecutor
+            executor:concurrent.futures.thread.ThreadPoolExecutor,
+            time_blocker:int,
             ):
         print("--->initialize Sam2...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.ai_classification_mem

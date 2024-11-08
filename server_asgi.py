@@ -25,12 +25,9 @@ from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_S
 
 
 import json
-import torch
 import asyncio
 import websockets
-import time
 import concurrent.futures
-import logging
 from models.server_conf import ServerConfig
 
 from models.ai_classification_model import AiClassificationModel
@@ -78,6 +75,7 @@ class WebSocketServer:
                     global_conf,
                     model_dict["WarningLightModel"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
 
                 "ai_meeting_assistant_chatbot":AI_Meeting_Chatbot(
@@ -88,18 +86,21 @@ class WebSocketServer:
                     llm_model=model_dict["DssoLLM"],
                     uploader=model_dict["uploader"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
 
                 "ai_classification":AI_Classification(
                     global_conf,
                     model_dict["AiClassificationModel"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
 
                 "forgery_detection":forgery_detection(
                     global_conf,
                     model_dict["ForgeryDetectionModel"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
 
                 "super_resolution":Super_Resolution(
@@ -107,17 +108,20 @@ class WebSocketServer:
                     model=model_dict["ESRGan"],
                     uploader=model_dict["uploader"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
                 "translation":mbart_translation(
                     global_conf,
                     model=model_dict["MbartTranslationModel"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
                     
                 #"Video_Generation_Interface":Video_Generation_Interface(global_conf),
                 "super_resulution_video":Super_Resolution_Video(
                     global_conf,
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
@@ -125,15 +129,21 @@ class WebSocketServer:
                     vad_model=model_dict["SileroVAD"],
                     translation_model = model_dict["MbartTranslationModel"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     ),
-                "sam2":Sam2(global_conf,executor=self.executor),
-                "sam1":Sam1(global_conf,executor=self.executor),
+                "sam2":Sam2(global_conf,
+                            executor=self.executor,
+                            time_blocker=global_conf.time_blocker),
+                "sam1":Sam1(global_conf,
+                            executor=self.executor,
+                            time_blocker=global_conf.time_blocker),
                 "realtime_asr_whisper_chatbot":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
                     global_conf,
                     asr_model = model_dict["WhisperSmall"],
                     vad_model=model_dict["SileroVAD"],
                     llm_model=model_dict["DssoLLM"],
                     executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
                     )
                 }
 
@@ -151,7 +161,7 @@ class WebSocketServer:
                     pass
                 else:
                     print(message_dict)
-                await self.project_name_dict[model_name].asyn_forward(websocket,message_dict)
+                await self.project_name_dict[model_name].asyn_forward_with_locker(websocket,message_dict)
             
     async def start(self):
         print('--->Start server! -_-')

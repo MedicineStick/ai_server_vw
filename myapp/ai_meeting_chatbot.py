@@ -27,7 +27,6 @@ logging.basicConfig(level=logging.INFO,
 import concurrent.futures.thread
 import asyncio
 
-@torch.no_grad()
 class AI_Meeting_Chatbot(DSSO_SERVER):
     def __init__(
         self,
@@ -37,10 +36,11 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         vad_model:DSSO_MODEL,
         llm_model:DSSO_MODEL,
         uploader:CosUploader,
-        executor:concurrent.futures.thread.ThreadPoolExecutor
+        executor:concurrent.futures.thread.ThreadPoolExecutor,
+        time_blocker:int,
         ):
         print("--->initialize AI_Meeting_Chatbot...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.ai_meeting_mem

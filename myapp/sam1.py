@@ -11,10 +11,11 @@ class Sam1(DSSO_SERVER):
     def __init__(
             self,
             conf:ServerConfig,
-            executor:concurrent.futures.thread.ThreadPoolExecutor
+            executor:concurrent.futures.thread.ThreadPoolExecutor,
+            time_blocker:int
             ):
         print("--->initialize Sam1...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.executor = executor
         self.conf = conf
         self.device = torch.device(self.conf.gpu_id)

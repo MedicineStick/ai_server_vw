@@ -22,10 +22,11 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             asr_model:DSSO_MODEL,
             vad_model:DSSO_MODEL,
             llm_model:DSSO_MODEL,
-            executor:concurrent.futures.thread.ThreadPoolExecutor
+            executor:concurrent.futures.thread.ThreadPoolExecutor,
+            time_blocker:int
             ):
         print("--->initialize Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.executor = executor
         self.conf = conf
         self._need_mem = self.conf.online_asr_mem
@@ -48,8 +49,17 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
 
     async def asyn_forward(self, websocket,message):
         import json
-        response = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
-        await websocket.send(json.dumps(response))
+        r1 = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+
+        if r1['if_send']:
+            await websocket.send(json.dumps(r1))
+
+        if r1['if_wait']:
+            r2 = await asyncio.get_running_loop().run_in_executor(self.executor, self.__execute_task, message)
+            r3 = {**r1, **r2}
+            r3['if_wait'] = False
+            if r3['if_send']:
+                await websocket.send(json.dumps(r3))
 
     def asr_forward(
             self,
@@ -88,15 +98,18 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             self,
             request:dict,
             ):
-        trans_text = self.asr_forward(self.task_tables[request["task_id"]]["audio"],request)
+        result = {}
+        result["trans_text"] = ""
+        result["response_text"] = ""
+        result["trans_text"] = self.asr_forward(self.task_tables[request["task_id"]]["audio"],request)
         self.task_tables[request["task_id"]]["audio"] = torch.zeros((0),dtype=torch.float)
-        response_text = self.llm_model.predict_func_delay(
-            prompt = trans_text,
+        result["response_text"] = self.llm_model.predict_func_delay(
+            prompt = result["trans_text"],
             retry_count = self.realtime_asr_retry_count,
             timeout = self.realtime_asr_llm_timeout,
             count = 0,
             )
-        return trans_text,response_text
+        return result
 
     def dsso_forward(self, request):
         
@@ -125,11 +138,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             self.task_tables[request["task_id"]] = {
                 "audio":torch.zeros((0),dtype=torch.float),
             }
-            
-            
             self.output_table[request["task_id"]] = []
-
-
 
         if request['state'] == "start":
             return output
@@ -165,12 +174,9 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
 
 
             if current_length>=self.realtime_asr_max_length_ms_chatbot/1000:
-
                 if_wait = True
-                trans_text,response_text = self.__execute_task(request)
-                if_send = True
 
-            elif  current_length>=self.realtime_asr_adaptive_thresholding_chatbot/1000:
+            elif current_length>=self.realtime_asr_adaptive_thresholding_chatbot/1000:
 
                 speech_timestamps = self.vad_model.predict_func_delay(
                     audio = self.task_tables[request["task_id"]]["audio"], 
@@ -190,10 +196,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                         if valid_tensor.shape[0]==0:
                             pass
                         else:
-                            if_wait = True
-                            trans_text,response_text = self.__execute_task(request)
-                            if_send = True
-                            
+                            if_wait = True             
                 else:
                     pass
             else:

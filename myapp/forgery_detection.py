@@ -82,10 +82,11 @@ class forgery_detection(DSSO_SERVER):
         self,
         conf:ServerConfig,
         model:DSSO_MODEL,
-        executor:concurrent.futures.thread.ThreadPoolExecutor
+        executor:concurrent.futures.thread.ThreadPoolExecutor,
+        time_blocker:int,
         ):
         print("--->initialize forgery_detection...")
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         self.executor = executor
         self.conf = conf
         self._need_mem = conf.forgery_detection_mem

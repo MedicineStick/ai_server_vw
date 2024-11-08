@@ -11,9 +11,10 @@ class Super_Resolution(DSSO_SERVER):
             conf:ServerConfig,
             model:DSSO_MODEL,
             uploader:CosUploader,
-            executor:concurrent.futures.thread.ThreadPoolExecutor
+            executor:concurrent.futures.thread.ThreadPoolExecutor,
+            time_blocker:int
             ):
-        super().__init__()
+        super().__init__(time_blocker=time_blocker)
         print("--->initialize Super_Resolution...")
         self.executor = executor
         self.conf = conf
