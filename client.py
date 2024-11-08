@@ -980,6 +980,9 @@ async def online_asr_en_microphone():
                     # Await a response from the WebSocket with a timeout
                     response = await asyncio.wait_for(websocket.recv(), 1)
                     print("Received response:", response)
+                    while response['if_wait']:
+                        response = await asyncio.wait_for(websocket.recv(), 1)
+                        print("Received response:", response)
                 except asyncio.TimeoutError:
                     pass
                 except websockets.ConnectionClosed:
