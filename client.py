@@ -958,6 +958,17 @@ async def online_asr_en_microphone():
                  "sample_rate": sample_rate,  # int
                  "translation_task":"none" # en2zh/zh2en/none  ##翻译任务，英到中/中到英/不翻译随便传
                  }
+        
+        output = {"trans_text": "",  #转写结果
+                   "response_text": "",  #大模型返回结果
+                     "record": False,
+                       "if_send": True,
+                         "audio_length": 10.0,
+                           "speech_timestamps": None,
+                             "if_wait": True  #是否需要等待，此时不录音
+                    
+                             }
+
         buffer_size = int(sample_rate)  # buffer size for 200ms
         p = pyaudio.PyAudio()
         stream = p.open(format=pyaudio.paInt16,
