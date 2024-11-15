@@ -24,6 +24,8 @@ print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 print("--->Loading Motion_Clone...")
 from myapp.motion_clone import Motion_Clone
+print("--->Loading Jumper_Cutter...")
+from myapp.jumper_cutter import Jumper_Cutter
 
 
 import json
@@ -148,6 +150,12 @@ class WebSocketServer:
                     time_blocker=global_conf.time_blocker,
                     ),
                 "motion_clone":Motion_Clone(
+                    conf=global_conf,
+                    uploader=model_dict["uploader"],
+                    executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
+                ),
+                "jumper_cutter":Jumper_Cutter(
                     conf=global_conf,
                     uploader=model_dict["uploader"],
                     executor=self.executor,

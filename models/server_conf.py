@@ -126,6 +126,11 @@ class ServerConfig:
 
         self.motion_clone_device = config["motion_clone_device"]
 
+        self.jumpcutter_temp_floder = config["jumpcutter_temp_floder"]
+        self.jumpcutter_sounded_speed = config["jumpcutter_sounded_speed"]
+        self.jumpcutter_silent_speed = config["jumpcutter_silent_speed"]
+        self.jumpcutter_output = config["jumpcutter_output"]
+
 
         
         

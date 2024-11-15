@@ -30,6 +30,7 @@ attrs==23.1.0
 audioread==3.0.1
 # Editable install with no version control (audioseal==0.1.2)
 -e /home/tione/notebook/lskong2/projects/12.audio_seal/audioseal-main
+audiotsm==0.1.2
 autobahn==23.6.2
 Automat==22.10.0
 av==10.0.0
@@ -492,6 +493,7 @@ pytorch-custom-utils==0.0.18
 pytorch-lightning==2.0.7
 pytorch-metric-learning==2.3.0
 pytorch-warmup==0.1.1
+pytube==15.0.0
 pytz==2023.3.post1
 PyWavelets==1.4.1
 pyworld==0.3.4

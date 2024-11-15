@@ -149,6 +149,10 @@ realtime_asr_retry_count : 1
 
 motion_clone_device: 4
 
+jumpcutter_temp_floder : "./temp/jumpcutter-master/temp/"
+jumpcutter_sounded_speed : 1
+jumpcutter_silent_speed: 999999
+jumpcutter_output : "./temp/jumpcutter-master/video/"
 
 
 

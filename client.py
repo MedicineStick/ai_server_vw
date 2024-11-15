@@ -1018,6 +1018,17 @@ async def motion_clone():
         response = await websocket.recv()
         print(f"Received from server: {response}")
 
+async def jumper_cutter():
+
+    data = {"project_name":"jumper_cutter","video_path":"temp/jumpcutter-master/AnqXL8_886-pRwwf.mp4"}
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    
+    async with websockets.connect(WS_URL) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(f"Received from server: {response}")
+
+
 def test_local_motion_clone():
     from myapp.motion_clone import Motion_Clone
     from models.server_conf import ServerConfig
@@ -1090,6 +1101,8 @@ if __name__ =="__main__":
         asyncio.run(realtime_asr_en())
     elif int(sys.argv[1])== 24:
         asyncio.run(motion_clone())
+    elif int(sys.argv[1]) == 25:
+        asyncio.run(jumper_cutter())
     
 
 
