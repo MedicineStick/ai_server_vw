@@ -147,6 +147,8 @@ ai_meeting_retry_count : 3
 realtime_asr_llm_timeout : 5
 realtime_asr_retry_count : 1
 
+motion_clone_device: 4
+
 
 
 

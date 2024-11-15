@@ -124,6 +124,8 @@ class ServerConfig:
         self.realtime_asr_llm_timeout = config["realtime_asr_llm_timeout"]
         self.realtime_asr_retry_count = config["realtime_asr_retry_count"]
 
+        self.motion_clone_device = config["motion_clone_device"]
+
 
         
         

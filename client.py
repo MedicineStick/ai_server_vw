@@ -1008,13 +1008,38 @@ async def online_asr_en_microphone():
             p.terminate()
 
 
+async def motion_clone():
+
+    data = {"project_name":"motion_clone","video_path":"temp/motion_clone/reference_videos/camera_zoom_out.mp4", "condition_image_paths":["temp/motion_clone/condition_images/rgb/dog_on_grass.png"], "new_prompt": "Dog, lying on the grass"}
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    
+    async with websockets.connect(WS_URL) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(f"Received from server: {response}")
+
+def test_local_motion_clone():
+    from myapp.motion_clone import Motion_Clone
+    from models.server_conf import ServerConfig
+    from models.dsso_util import CosUploader
+    conf_path = "./configs/conf.yaml"
+    global_conf = ServerConfig(conf_path)
+    input = {"video_path":"temp/motion_clone/reference_videos/camera_zoom_out.mp4", "condition_image_paths":["temp/motion_clone/condition_images/rgb/dog_on_grass.png"], "new_prompt": "Dog, lying on the grass"}
+    model = Motion_Clone(
+                    conf=global_conf,
+                    uploader=CosUploader(global_conf.cos_uploader_mode),
+                    executor=None,
+                    time_blocker=global_conf.time_blocker,
+                )
+    model.dsso_forward(input)
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        asyncio.run(online_asr_en_microphone())
+        #asyncio.run(online_asr_en_microphone())
         #ai_meeting_chatbot_offline()
-        #test_args()
+        test_local_motion_clone()
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())
@@ -1063,6 +1088,8 @@ if __name__ =="__main__":
         asyncio.run(sam2())
     elif int(sys.argv[1]) ==23:
         asyncio.run(realtime_asr_en())
+    elif int(sys.argv[1])== 24:
+        asyncio.run(motion_clone())
     
 
 

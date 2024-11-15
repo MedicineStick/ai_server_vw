@@ -22,6 +22,8 @@ print("--->Loading Sam1...")
 from myapp.sam1 import Sam1
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
+print("--->Loading Motion_Clone...")
+from myapp.motion_clone import Motion_Clone
 
 
 import json
@@ -144,7 +146,13 @@ class WebSocketServer:
                     llm_model=model_dict["DssoLLM"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
-                    )
+                    ),
+                "motion_clone":Motion_Clone(
+                    conf=global_conf,
+                    uploader=model_dict["uploader"],
+                    executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
+                )
                 }
 
     async def handler(self, websocket, path):
