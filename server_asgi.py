@@ -20,7 +20,6 @@ from models.whisper_small import WhisperSmall
 from models.mbart_translation_model import MbartTranslationModel
 from models.vits_tts_cn import VitsTTSCN
 from models.vits_tts_en import VitsTTSEN
-from models.esr_gan import ESRGan
 from models.silero_vad import Silero_VAD
 from models.dsso_util import CosUploader
 
@@ -42,7 +41,6 @@ class WebSocketServer:
             "MbartTranslationModel":MbartTranslationModel(global_conf),
             "VitsTTSCN":VitsTTSCN(global_conf),
             "VitsTTSEN":VitsTTSEN(global_conf),
-            "ESRGan":ESRGan(global_conf),
             "SileroVAD":Silero_VAD(global_conf),
             "uploader":CosUploader(global_conf.cos_uploader_mode),
 
