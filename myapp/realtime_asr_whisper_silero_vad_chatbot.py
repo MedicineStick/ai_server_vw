@@ -48,29 +48,19 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         self.en_tts_model = en_tts_model
         self.realtime_asr_llm_timeout = self.conf.realtime_asr_llm_timeout
         self.realtime_asr_retry_count = self.conf.realtime_asr_retry_count
+        self.hallucination_words = ["明镜"]
     
 
     async def asyn_forward(self, websocket,message):
         import json
-        print("run_in_executor1...")
         r1 = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
-        print("run_in_executor1 done...")
             
-
         if r1['if_wait']:
-            print("websocket.send1...")
             await websocket.send(json.dumps(r1))
-            print("websocket.send1 done...")
-
-            print("run_in_executor2...")
             r2 = await asyncio.get_running_loop().run_in_executor(self.executor, self.__execute_task, message)
-            print("run_in_executor2 done...")
-
             r3 = {**r1, **r2}
             r3['if_wait'] = False
-            print("websocket.send2...")
             await websocket.send(json.dumps(r3))
-            print("websocket.send2 done...")
 
     def asr_forward(
             self,
@@ -80,7 +70,6 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         result = ""
         if request["language_code"]=="zh":
             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
-            print("asr_model predict_func_delay1...")
             result = self.asr_model.predict_func_delay(
                 audio = valid_tensor,
                 language=request['language_code'],
@@ -88,17 +77,14 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                 beam_size = self.realtime_asr_beam_size,
                 fp16=torch.cuda.is_available(),
             )
-            print("asr_model predict_func_delay1 done...")
 
         else:
-            print("asr_model predict_func_delay2...")
             result = self.asr_model.predict_func_delay(
                     audio = valid_tensor, 
                     language=request['language_code'],
                     beam_size = self.realtime_asr_beam_size,
                     fp16=torch.cuda.is_available(),
                     )
-        print("asr_model predict_func_delay2 done...")
         return result["text"].strip()
 
     def dsso_reload_conf(self,conf:ServerConfig):
@@ -115,17 +101,31 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         result = {}
         result["trans_text"] = ""
         result["response_text"] = ""
-        result["trans_text"] = self.asr_forward(self.task_tables[request["task_id"]]["audio"],request)
+        trans_text = self.asr_forward(self.task_tables[request["task_id"]]["audio"],request)
         self.task_tables[request["task_id"]]["audio"] = torch.zeros((0),dtype=torch.float)
+        
+        
+        if_discard = False
 
-        print("llm_model predict_func_delay...")
-        result["response_text"] = self.llm_model.predict_func_delay(
-            prompt = result["trans_text"],
-            retry_count = self.realtime_asr_retry_count,
-            timeout = self.realtime_asr_llm_timeout,
-            count = 0,
-            )
-        print("llm_model predict_func_delay done...")
+        for word in self.hallucination_words:
+            if word in response_text:
+                if_discard = True
+                break
+        if if_discard:
+            result["response_text"] = ""
+            result["trans_text"] = ""
+        else:
+            response_text = self.llm_model.predict_func_delay(
+                            prompt = trans_text,
+                            retry_count = self.realtime_asr_retry_count,
+                            timeout = self.realtime_asr_llm_timeout,
+                            count = 0,
+                            )
+            result["response_text"] = response_text
+            result["trans_text"] = trans_text
+        
+        print("trans_text: "+result["trans_text"])
+        print("response_text: "+result["response_text"])
         """
         tts_input = {}
         tts_input["text"] = result["response_text"] 

@@ -71,9 +71,13 @@ class DSSO_SERVER(ABC):
         while True:
             if self._available:
                 self._available = False
-                await self.asyn_forward(websocket,message)
-                self._available = True
-                break
+                try:
+                    await self.asyn_forward(websocket,message)
+                except Exception as error:
+                    print('Error: ', error)
+                finally:
+                    self._available = True
+                    break
             else:
                 time.sleep(self._time_blocker)
 
@@ -96,9 +100,9 @@ class DSSO_SERVER(ABC):
         except Exception as error:
             print('Error: ', error)
             output['state'] += str(error)
+        finally:
             self._available = True
-        self._available = True
-        return output
+            return output
 
     @abstractmethod
     def dsso_init(self,req:Dict = None)->bool:
