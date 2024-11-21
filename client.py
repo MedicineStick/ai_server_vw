@@ -1020,7 +1020,12 @@ async def motion_clone():
 
 async def jumper_cutter():
 
-    data = {"project_name":"jumper_cutter","video_path":"temp/jumpcutter-master/AnqXL8_886-pRwwf.mp4"}
+    data = {
+        "project_name":"jumper_cutter",
+        "video_path":"temp/jumpcutter-master/AnqXL8_886-pRwwf.mp4",
+        "silent_speed":9999,
+        "sounded_speed":1,
+        }
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:

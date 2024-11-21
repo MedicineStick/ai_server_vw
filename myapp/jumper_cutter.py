@@ -107,7 +107,6 @@ def cutter_exec(
         INPUT_FILE = downloadFile(args.url)
     else:
         INPUT_FILE = args.input_file
-    URL = args.url
     FRAME_QUALITY = args.frame_quality
 
     assert INPUT_FILE != None , "why u put no input file, that dum"
@@ -262,12 +261,13 @@ class Jumper_Cutter(DSSO_SERVER):
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
         output_video = self.conf.jumpcutter_output+request["task_id"]+".mp4"
+        
         output_map["output"] = cutter_exec(
             input_path=request["video_path"],
             output_path=output_video,
             jumpcutter_temp_floder=self.conf.jumpcutter_temp_floder,
-            sounded_speed=self.conf.jumpcutter_sounded_speed,
-            silent_speed=self.conf.jumpcutter_silent_speed,
+            sounded_speed=request["sounded_speed"],
+            silent_speed=request["silent_speed"],
             )
         output_map["output"] = self.uploader.upload_video(output_video)
         output_map['state'] = 'finished'

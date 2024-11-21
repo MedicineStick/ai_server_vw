@@ -146,6 +146,8 @@ class WebSocketServer:
                     asr_model = model_dict["WhisperSmall"],
                     vad_model=model_dict["SileroVAD"],
                     llm_model=model_dict["DssoLLM"],
+                    cn_tts_model=model_dict["VitsTTSCN"],
+                    en_tts_model=model_dict["VitsTTSEN"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),

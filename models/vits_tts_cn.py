@@ -32,7 +32,7 @@ class VitsTTSCN(DSSO_MODEL):
 
     def predict_func(self, **kwargs)->dict:
         output_map = {}
-        _ = kwargs["gender"]
+        #_ = kwargs["gender"]
         item = kwargs["text"]
         if (item == None or item == ""):
             return output_map,True
@@ -47,4 +47,4 @@ class VitsTTSCN(DSSO_MODEL):
         binary_stream = audio.tobytes()
         encoded_audio = base64.b64encode(binary_stream).decode()
         output_map['audio_data'] = encoded_audio
-        return output_map,True
+        return output_map
