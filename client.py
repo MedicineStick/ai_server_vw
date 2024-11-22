@@ -24,6 +24,7 @@ import numpy as np
 from scipy.io.wavfile import write
 WS_URL = 'ws://172.27.11.12:9501/ws'  # Replace with your WebSocket URL
 import pyaudio
+import torchaudio
 
 def inner_func(audio:int,name:str):
     print(audio)
@@ -69,7 +70,7 @@ def vits_conversion():
 
 def test3():
     from models.dsso_util import CosUploader
-    import torchaudio
+    
     file_a = "../2.tingjian/test_set/temp_resample_concated.wav"
     #waveform,sr = torchaudio.load("../2.tingjian/test_set/temp_resample_concated.wav",normalize=True)
     #print(waveform.shape)
@@ -427,10 +428,17 @@ async def vits_tts_cn():
     async with websockets.connect(WS_URL, max_size=99999999999999) as websocket:
         await websocket.send(encoded_data)
         response = await websocket.recv()
+
+        import scipy
+        # 音频 -> base64
+        #audio #Numpy 数组
+        #binary_stream = audio.tobytes()
+        #encoded_audio = base64.b64encode(binary_stream).decode()
+
+        # base64 -> 音频
         binary_data = base64.b64decode(json.loads(response)["audio_data"].encode())
-        
         audio_array = np.frombuffer(binary_data, dtype=np.float32)
-        write(output_audio, 16000, audio_array)
+        scipy.io.wavfile.write(output_audio, 16000, audio_array)
     
 async def translation_zh2en():
     article_hi = "With the coming of Category and Product launch, the effectiveness of creative assets and category preference are crucial to our DSSO marketing promotion."
@@ -952,9 +960,8 @@ async def online_asr_en_microphone():
     async with websockets.connect(WS_URL) as websocket:
         sample_rate = 16000
         input = {"project_name": "realtime_asr_whisper_chatbot",
-                 "language_code": 'en', #zh 
+                 "language_code": 'zh', #zh 
                  "audio_data": None,  #和之前一样
-                 "state": "continue",
                  "sample_rate": sample_rate,  # int
                  "translation_task":"none" # en2zh/zh2en/none  ##翻译任务，英到中/中到英/不翻译随便传
                  }
@@ -966,7 +973,6 @@ async def online_asr_en_microphone():
                          "audio_length": 10.0,
                            "speech_timestamps": None,
                              "if_wait": True  #是否需要等待，此时不录音
-                    
                              }
 
         buffer_size = int(sample_rate)  # buffer size for 200ms
@@ -1053,9 +1059,9 @@ if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        #asyncio.run(online_asr_en_microphone())
+        asyncio.run(online_asr_en_microphone())
         #ai_meeting_chatbot_offline()
-        test_local_motion_clone()
+        #test_local_motion_clone()
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())
