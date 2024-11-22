@@ -137,7 +137,7 @@ cos_uploader_mode : 0
 
 realtime_asr_min_silence_duration_ms_chatbot: 100
 realtime_asr_max_length_ms_chatbot: 10000
-realtime_asr_adaptive_thresholding_chatbot: 2000
+realtime_asr_adaptive_thresholding_chatbot: 3000
 
 
 ai_meeting_llm_timeout : 30

@@ -35,7 +35,7 @@ class VitsTTSCN(DSSO_MODEL):
         #_ = kwargs["gender"]
         item = kwargs["text"]
         if (item == None or item == ""):
-            return output_map,True
+            return output_map
         phonemes, char_embeds = self.tts_front.chinese_to_phonemes(item)
         input_ids = cleaned_text_to_sequence(phonemes)
         with torch.no_grad():

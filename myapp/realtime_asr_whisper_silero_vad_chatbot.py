@@ -53,14 +53,21 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
 
     async def asyn_forward(self, websocket,message):
         import json
+        print("run_in_executor 1")
         r1 = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
-            
+        print("run_in_executor 1 done") 
         if r1['if_wait']:
+            print("await websocket.send(json.dumps(r1))")
             await websocket.send(json.dumps(r1))
+            print("await websocket.send(json.dumps(r1)) done")
+            print("run_in_executor 2")
             r2 = await asyncio.get_running_loop().run_in_executor(self.executor, self.__execute_task, message)
+            print("run_in_executor 2 done")
             r3 = {**r1, **r2}
             r3['if_wait'] = False
+            print("await websocket.send(json.dumps(r3))")
             await websocket.send(json.dumps(r3))
+            print("await websocket.send(json.dumps(r3)) done")
 
     def asr_forward(
             self,
@@ -106,12 +113,12 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         
         
         if_discard = False
-
+        print("trans_text: "+trans_text)
         for word in self.hallucination_words:
-            if word in response_text:
+            if word in trans_text:
                 if_discard = True
                 break
-        if if_discard:
+        if if_discard or len(trans_text)==0:
             result["response_text"] = ""
             result["trans_text"] = ""
         else:
@@ -123,14 +130,10 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                             )
             result["response_text"] = response_text
             result["trans_text"] = trans_text
-        
-        print("trans_text: "+result["trans_text"])
-        print("response_text: "+result["response_text"])
-        """
-        tts_input = {}
-        tts_input["text"] = result["response_text"] 
-        result["audio_data"] = self.cn_tts_model.predict_func_delay(tts_input)
-        """
+            print("response_text: "+result["response_text"])
+            #"""
+            result["audio_data"] = self.cn_tts_model.predict_func_delay(text=result["response_text"])["audio_data"]
+            #"""
         return result
 
     def dsso_forward(self, request):
