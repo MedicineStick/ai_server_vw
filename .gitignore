@@ -8,4 +8,6 @@ models/__pycache__/
 third_party/sam2/__pycache__/
 third_party/sam2/utils/__pycache__/
 third_party/silero-vad-master/__pycache__/
+*.pyc
+
 
