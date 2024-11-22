@@ -12,7 +12,6 @@ import torchaudio
 import sys
 sys.path.append("/home/tione/notebook/lskong2/projects/2.tingjian/")
 from models.dsso_model import DSSO_MODEL
-import torchaudio
 import concurrent.futures.thread
 import asyncio
 class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
@@ -48,7 +47,8 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         self.en_tts_model = en_tts_model
         self.realtime_asr_llm_timeout = self.conf.realtime_asr_llm_timeout
         self.realtime_asr_retry_count = self.conf.realtime_asr_retry_count
-        self.hallucination_words = ["明镜"]
+        self.hallucination_words = ["明镜","打赏","点赞"]
+        self.count = 0
     
 
     async def asyn_forward(self, websocket,message):
@@ -75,6 +75,9 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             request:dict,
             )->str:
         result = ""
+        print("valid_tensor.shape ",valid_tensor.shape)
+        torchaudio.save(f"./temp/{self.count}.wav",valid_tensor.unsqueeze(0),16000)
+        self.count+=1
         if request["language_code"]=="zh":
             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
             result = self.asr_model.predict_func_delay(
@@ -132,7 +135,9 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             result["trans_text"] = trans_text
             print("response_text: "+result["response_text"])
             #"""
-            result["audio_data"] = self.cn_tts_model.predict_func_delay(text=result["response_text"])["audio_data"]
+            result["audio_data"] = self.cn_tts_model.predict_func_delay(
+                text=response_text
+                )["audio_data"]
             #"""
         return result
 
@@ -201,13 +206,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                 
                 if current_length-last_active_point>= self.realtime_asr_adaptive_thresholding_chatbot/1000:
 
-                    valid_tensor = self.task_tables[request["task_id"]]["audio"][:]
-                    self.task_tables[request["task_id"]]["audio"] = torch.zeros((0),dtype=torch.float)
-
-                    if valid_tensor.shape[0]==0:
-                        pass
-                    else:
-                        if_wait = True             
+                    if_wait = True             
             else:
                 pass
         else:
