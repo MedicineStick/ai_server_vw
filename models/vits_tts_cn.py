@@ -45,6 +45,7 @@ class VitsTTSCN(DSSO_MODEL):
             audio = self.net_g.infer(x_tst, x_tst_lengths, x_tst_prosody, noise_scale=0.5,
                                 length_scale=1)[0][0, 0].data.cpu().float().numpy()
         binary_stream = audio.tobytes()
-        encoded_audio = base64.b64encode(binary_stream).decode()
+        #output_map['audio_data'] = binary_stream
+        encoded_audio = base64.b64encode(binary_stream).decode('utf-8')
         output_map['audio_data'] = encoded_audio
         return output_map

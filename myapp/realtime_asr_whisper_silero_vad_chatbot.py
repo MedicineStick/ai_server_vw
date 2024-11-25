@@ -10,6 +10,7 @@ import torchaudio
 # https://github.com/snakers4/silero-vad/blob/master/examples/microphone_and_webRTC_integration/microphone_and_webRTC_integration.py
 # https://github.com/davabase/whisper_real_time/tree/master
 import sys
+import langid
 sys.path.append("/home/tione/notebook/lskong2/projects/2.tingjian/")
 from models.dsso_model import DSSO_MODEL
 import concurrent.futures.thread
@@ -121,9 +122,15 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             if word in trans_text:
                 if_discard = True
                 break
+        """
+        with open('temp/0_output.wav', 'rb') as f:
+            binary_data = f.read()
+        encoded_audio = base64.b64encode(binary_data).decode('utf-8')
+        """
         if if_discard or len(trans_text)==0:
             result["response_text"] = ""
             result["trans_text"] = ""
+            result["audio_data"] = None
         else:
             response_text = self.llm_model.predict_func_delay(
                             prompt = trans_text,
@@ -134,11 +141,16 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             result["response_text"] = response_text
             result["trans_text"] = trans_text
             print("response_text: "+result["response_text"])
-            #"""
-            result["audio_data"] = self.cn_tts_model.predict_func_delay(
-                text=response_text
-                )["audio_data"]
-            #"""
+
+            #result["audio_data"] = encoded_audio
+            language, _ = langid.classify(response_text)
+            if language=='zh':
+                result["audio_data"] = self.cn_tts_model.predict_func_delay(text=response_text)["audio_data"]
+            elif language=='en':
+                result["audio_data"] = self.en_tts_model.predict_func_delay(text=response_text)["audio_data"]
+            else:
+                result["audio_data"] = None
+
         return result
 
     def dsso_forward(self, request):

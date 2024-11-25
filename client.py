@@ -1055,11 +1055,20 @@ def test_local_motion_clone():
                 )
     model.dsso_forward(input)
 
+
+def test_lang():
+    import langid
+
+    text = "你好"
+    language, _ = langid.classify(text)
+
+    print(f"Language: {language}")
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        asyncio.run(online_asr_en_microphone())
+        test_lang()
         #ai_meeting_chatbot_offline()
         #test_local_motion_clone()
         #vits_conversion()
