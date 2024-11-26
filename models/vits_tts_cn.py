@@ -8,6 +8,7 @@ from third_party.vits_cn.text.symbols import symbols
 from third_party.vits_cn.vits_pinyin import VITS_PinYin
 from third_party.vits_cn.text import cleaned_text_to_sequence
 from third_party.vits_cn import utils
+import struct
 sys.path.pop()
 
 
@@ -44,8 +45,24 @@ class VitsTTSCN(DSSO_MODEL):
             x_tst_prosody = torch.FloatTensor(char_embeds).unsqueeze(0).to(self.device)
             audio = self.net_g.infer(x_tst, x_tst_lengths, x_tst_prosody, noise_scale=0.5,
                                 length_scale=1)[0][0, 0].data.cpu().float().numpy()
-        binary_stream = audio.tobytes()
-        #output_map['audio_data'] = binary_stream
-        encoded_audio = base64.b64encode(binary_stream).decode('utf-8')
+        #binary_stream = audio.tobytes()
+
+        import scipy
+        f_temp = "./temp/test.wav"
+        scipy.io.wavfile.write(f_temp, 16000, audio)
+        with open(f_temp, 'rb') as f:
+            binary_data = f.read()
+
+        # Encode the binary data to base64
+        encoded_audio = base64.b64encode(binary_data).decode('utf-8')
+
+        """
+        sample_rate = 16000
+        bit_depth = 32
+        num_channels = 1
+        metadata = struct.pack('<IHH', sample_rate, bit_depth, num_channels)
+        binary_stream = metadata + binary_stream
+        """
+        #encoded_audio = base64.b64encode(binary_stream).decode('utf-8')
         output_map['audio_data'] = encoded_audio
         return output_map

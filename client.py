@@ -18,7 +18,7 @@ import wave
 import base64
 import sys
 import asyncio
-
+import scipy
 import re
 import numpy as np 
 from scipy.io.wavfile import write
@@ -984,7 +984,7 @@ async def online_asr_en_microphone():
                         frames_per_buffer=buffer_size)
 
         print("Recording...")
-
+        count = 0
         try:
             while True:
                 data = stream.read(buffer_size)
@@ -996,10 +996,17 @@ async def online_asr_en_microphone():
                 try:
                     # Await a response from the WebSocket with a timeout
                     response = await asyncio.wait_for(websocket.recv(), 1)
-                    print("Received response:", response)
+                    response = json.loads(response)
+                    print("Received response1:", response)
                     while response['if_wait']:
-                        response = await asyncio.wait_for(websocket.recv(), 1)
-                        print("Received response:", response)
+                        response = await asyncio.wait_for(websocket.recv(), 10)
+                        response = json.loads(response)
+                        #print("Received response2:", response)
+                        output_audio = "E:\\workspace\\code\\audio\\"+str(count)+".wav"
+                        count+=1
+                        binary_data = base64.b64decode(response["audio_data"].encode())
+                        audio_array = np.frombuffer(binary_data, dtype=np.float32)
+                        scipy.io.wavfile.write(output_audio, 16000, audio_array)
                 except asyncio.TimeoutError:
                     pass
                 except websockets.ConnectionClosed:
@@ -1068,9 +1075,9 @@ if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        test_lang()
+        #test_lang()
         #ai_meeting_chatbot_offline()
-        #test_local_motion_clone()
+        asyncio.run(online_asr_en_microphone())
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())

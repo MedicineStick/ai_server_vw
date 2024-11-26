@@ -49,6 +49,8 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         self.realtime_asr_llm_timeout = self.conf.realtime_asr_llm_timeout
         self.realtime_asr_retry_count = self.conf.realtime_asr_retry_count
         self.hallucination_words = ["明镜","打赏","点赞"]
+        self.response_cn = "我没听清楚，请再说一遍"
+        self.response_en = "Looks like you were going to say something, but I didn't get you, please say again"
         self.count = 0
     
 
@@ -77,7 +79,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             )->str:
         result = ""
         print("valid_tensor.shape ",valid_tensor.shape)
-        torchaudio.save(f"./temp/{self.count}.wav",valid_tensor.unsqueeze(0),16000)
+        #torchaudio.save(f"./temp/{self.count}.wav",valid_tensor.unsqueeze(0),16000)
         self.count+=1
         if request["language_code"]=="zh":
             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
@@ -128,9 +130,17 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         encoded_audio = base64.b64encode(binary_data).decode('utf-8')
         """
         if if_discard or len(trans_text)==0:
-            result["response_text"] = ""
+            language, _ = langid.classify(trans_text)
             result["trans_text"] = ""
-            result["audio_data"] = None
+            if language=='zh':
+                result["audio_data"] = self.cn_tts_model.predict_func_delay(text=self.response_cn)["audio_data"]
+                result["response_text"] = self.response_cn
+            elif language=='en':
+                result["audio_data"] = self.en_tts_model.predict_func_delay(text=self.response_en,gender=0)["audio_data"]
+                result["response_text"] = self.response_en
+            else:
+                result["audio_data"] = None
+                result["response_text"] = ""
         else:
             response_text = self.llm_model.predict_func_delay(
                             prompt = trans_text,
