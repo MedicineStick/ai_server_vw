@@ -157,7 +157,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
             if language=='zh':
                 result["audio_data"] = self.cn_tts_model.predict_func_delay(text=response_text)["audio_data"]
             elif language=='en':
-                result["audio_data"] = self.en_tts_model.predict_func_delay(text=response_text)["audio_data"]
+                result["audio_data"] = self.en_tts_model.predict_func_delay(text=response_text,gender=0)["audio_data"]
             else:
                 result["audio_data"] = None
 
