@@ -147,7 +147,7 @@ ai_meeting_retry_count : 3
 realtime_asr_llm_timeout : 20
 realtime_asr_retry_count : 1
 
-motion_clone_device: 4
+motion_clone_device: 5
 
 jumpcutter_temp_floder : "./temp/jumpcutter-master/temp/"
 jumpcutter_sounded_speed : 1

@@ -134,7 +134,7 @@ def motion_exec(request: Dict) -> str:
         pipeline.input_config,  pipeline.unet.input_config = config,  config  # update config
         
         #  perform motion representation extraction
-        seed_motion = seed_motion = example_infor.get("seed", args.default_seed) 
+        seed_motion = example_infor.get("seed", args.default_seed) 
         generator = torch.Generator(device=pipeline.device)
         generator.manual_seed(seed_motion)
         if not os.path.exists(args.motion_representation_save_dir):
@@ -157,8 +157,7 @@ def motion_exec(request: Dict) -> str:
         print(save_path)
         return save_path
 
-#input = {"video_path":"temp/motion_clone/reference_videos/camera_zoom_out.mp4", "condition_image_paths":["temp/motion_clone/condition_images/rgb/dog_on_grass.png"], "new_prompt": "Dog, lying on the grass"}
-#motion_exec(input)
+
 
 class Motion_Clone(DSSO_SERVER):
     
@@ -174,6 +173,96 @@ class Motion_Clone(DSSO_SERVER):
         self.conf  = conf
         self.executor = executor
         self.motion_clone_device = conf.motion_clone_device
+        self.args = ARGS()
+
+
+        args = ARGS()
+        device_id = self.conf.motion_clone_device
+        config  = OmegaConf.load(args.inference_config)
+        adopted_dtype = torch.float16
+        device = torch.device(device_id)
+        set_all_seed(42)
+        
+        tokenizer    = CLIPTokenizer.from_pretrained(args.pretrained_model_path, subfolder="tokenizer")
+        text_encoder = CLIPTextModel.from_pretrained(args.pretrained_model_path, subfolder="text_encoder").to(device).to(dtype=adopted_dtype)
+        vae          = AutoencoderKL.from_pretrained(args.pretrained_model_path, subfolder="vae").to(device).to(dtype=adopted_dtype)
+        
+        config.width = config.get("W", args.W)
+        config.height = config.get("H", args.H)
+        config.video_length = config.get("L", args.L)
+        
+        if not os.path.exists(args.generated_videos_save_dir):
+            os.makedirs(args.generated_videos_save_dir)
+        OmegaConf.save(config, os.path.join(args.generated_videos_save_dir,"inference_config.json"))
+        
+        model_config = OmegaConf.load("./checkpoints/motionclone_models/configs/model_config/model_config.yaml")
+        unet = UNet3DConditionModel.from_pretrained_2d(args.pretrained_model_path, subfolder="unet", unet_additional_kwargs=OmegaConf.to_container(model_config.unet_additional_kwargs),).to(device).to(dtype=adopted_dtype)
+        
+        # load controlnet model
+        controlnet =  None
+        if config.get("controlnet_path", "") != "":
+            # assert model_config.get("controlnet_images", "") != ""
+            assert config.get("controlnet_config", "") != ""
+            
+            unet.config.num_attention_heads = 8
+            unet.config.projection_class_embeddings_input_dim = None
+
+            controlnet_config = OmegaConf.load("/home/tione/notebook/lskong2/projects/ai_server_vw/checkpoints/motionclone_models/configs/sparsectrl/latent_condition.yaml")
+            controlnet = SparseControlNetModel.from_unet(unet, controlnet_additional_kwargs=controlnet_config.get("controlnet_additional_kwargs", {})).to(device).to(dtype=adopted_dtype)
+
+            auto_download(config.controlnet_path, is_dreambooth_lora=False)
+            print(f"loading controlnet checkpoint from {config.controlnet_path} ...")
+            controlnet_state_dict = torch.load(config.controlnet_path, map_location="cpu")
+            controlnet_state_dict = controlnet_state_dict["controlnet"] if "controlnet" in controlnet_state_dict else controlnet_state_dict
+            controlnet_state_dict = {name: param for name, param in controlnet_state_dict.items() if "pos_encoder.pe" not in name}
+            controlnet_state_dict.pop("animatediff_config", "")
+            controlnet.load_state_dict(controlnet_state_dict)
+            del controlnet_state_dict
+
+        # set xformers
+        if is_xformers_available() and (not args.without_xformers):
+            unet.enable_xformers_memory_efficient_attention()
+
+        self.pipeline = AnimationPipeline(
+            vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=unet,
+            controlnet=controlnet,
+            scheduler=DDIMScheduler(**OmegaConf.to_container(model_config.noise_scheduler_kwargs)),
+        ).to(device)
+        
+        self.pipeline = load_weights(
+            self.pipeline,
+            # motion module
+            motion_module_path         = config.get("motion_module", ""),
+            # domain adapter
+            adapter_lora_path          = config.get("adapter_lora_path", ""),
+            adapter_lora_scale         = config.get("adapter_lora_scale", 1.0),
+            # image layer
+            #dreambooth_model_path      = config.get("dreambooth_path", ""),
+        ).to(device)
+        self.pipeline.text_encoder.to(dtype=adopted_dtype)
+        
+        # customized functions in motionclone_functions
+        self.pipeline.scheduler.customized_step = schedule_customized_step.__get__(self.pipeline.scheduler)
+        self.pipeline.scheduler.customized_set_timesteps = schedule_set_timesteps.__get__(self.pipeline.scheduler)
+        self.pipeline.unet.forward = unet_customized_forward.__get__(self.pipeline.unet)
+        self.pipeline.sample_video = sample_video.__get__(self.pipeline)
+        self.pipeline.single_step_video = single_step_video.__get__(self.pipeline)
+        self.pipeline.get_temp_attn_prob = get_temp_attn_prob.__get__(self.pipeline)
+        self.pipeline.add_noise = add_noise.__get__(self.pipeline)
+        self.pipeline.compute_temp_loss = compute_temp_loss.__get__(self.pipeline)
+        self.pipeline.obtain_motion_representation = obtain_motion_representation.__get__(self.pipeline)
+        
+        for param in self.pipeline.unet.parameters():
+            param.requires_grad = False
+        for param in self.pipeline.controlnet.parameters():
+            param.requires_grad = False
+        
+        self.pipeline.input_config,  self.pipeline.unet.input_config = config,  config
+        self.pipeline.unet = prep_unet_attention(self.pipeline.unet,self.pipeline.input_config.motion_guidance_blocks)
+        self.pipeline.unet = prep_unet_conv(self.pipeline.unet)
+        self.pipeline.scheduler.customized_set_timesteps(config.inference_steps, config.guidance_steps,config.guidance_scale,device=device,timestep_spacing_type = "uneven")
+
+        self.config  = config
 
     async def asyn_forward(self, websocket,message):
         import json
@@ -188,9 +277,40 @@ class Motion_Clone(DSSO_SERVER):
 
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
-        request["motion_clone_device"] = self.motion_clone_device
-        output_video = motion_exec(request)
-        output_map['output'] = self.uploader.upload_video(output_video)
+        example_infor = request
+        self.config.video_path = example_infor["video_path"]
+        self.config.condition_image_path_list = example_infor["condition_image_paths"]
+        self.config.image_index = example_infor.get("image_index",[0])
+        assert len(self.config.image_index) == len(self.config.condition_image_path_list)
+        self.config.new_prompt = example_infor["new_prompt"] + self.config.get("positive_prompt", "")
+        self.config.controlnet_scale = example_infor.get("controlnet_scale", 1.0)
+        self.pipeline.input_config,  self.pipeline.unet.input_config = self.config,  self.config  # update config
+        
+        #  perform motion representation extraction
+        seed_motion = example_infor.get("seed", self.args.default_seed) 
+        generator = torch.Generator(device=self.pipeline.device)
+        generator.manual_seed(seed_motion)
+        if not os.path.exists(self.args.motion_representation_save_dir):
+            os.makedirs(self.args.motion_representation_save_dir)
+        motion_representation_path = os.path.join(self.args.motion_representation_save_dir,  os.path.splitext(os.path.basename(self.config.video_path))[0] + '.pt') 
+        self.pipeline.obtain_motion_representation(generator= generator, motion_representation_path = motion_representation_path, use_controlnet=True,) 
+        
+        # perform video generation
+        seed = seed_motion # can assign other seed here
+        generator = torch.Generator(device=self.pipeline.device)
+        generator.manual_seed(seed)
+        self.pipeline.input_config.seed = seed
+        videos = self.pipeline.sample_video(generator = generator, add_controlnet=True,)
+
+        videos = rearrange(videos, "b c f h w -> b f h w c")
+        save_path = os.path.join(self.args.generated_videos_save_dir, os.path.splitext(os.path.basename(self.config.video_path))[0]
+                                    + "_" + self.config.new_prompt.strip().replace(' ', '_') + str(seed_motion) + "_" +str(seed)+'.mp4')                                        
+        videos_uint8 = (videos[0] * 255).astype(np.uint8)
+        imageio.mimwrite(save_path, videos_uint8, fps=8)
+
+
+
+        output_map['output'] = self.uploader.upload_video(save_path)
         output_map['state'] = 'finished'
         return output_map
 
