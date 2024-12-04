@@ -16,9 +16,10 @@ from typing import Dict
 from models.dsso_util import CosUploader
 from myapp.dsso_server import DSSO_SERVER
 from models.server_conf import ServerConfig
-
+import urllib
 import concurrent.futures.thread
 import asyncio
+import shutil
 # python i2v_video_sample.py --inference_config "configs/i2v_rgb.yaml" --examples "configs/i2v_rgb.jsonl"
 
 
@@ -278,8 +279,30 @@ class Motion_Clone(DSSO_SERVER):
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
         example_infor = request
-        self.config.video_path = example_infor["video_path"]
-        self.config.condition_image_path_list = example_infor["condition_image_paths"]
+        if 'http' in example_infor["video_path"]:
+            urllib.request.urlretrieve(example_infor["video_path"], "./temp/motion_clone/temp_motion.mp4")
+            self.config.video_path = "./temp/motion_clone/temp_motion.mp4"
+        else:
+            if os.path.exists(example_infor["video_path"]):
+                pass
+            else:
+                self.config.video_path = "./temp/motion_clone/temp_motion.mp4"
+
+
+        self.config.condition_image_path_list = []
+        for i in range(0,len(example_infor["condition_image_paths"])):
+            if 'http' in example_infor["condition_image_paths"][i]:
+                urllib.request.urlretrieve(example_infor["condition_image_paths"][i], f"./temp/motion_clone/temp_{i}.jpg")
+                self.config.condition_image_path_list.append(f"./temp/motion_clone/temp_{i}.jpg")
+            else:
+                if os.path.exists(example_infor["condition_image_paths"][i]):
+                    self.config.condition_image_path_list.append(example_infor["condition_image_paths"][i])
+                else:
+                    pass
+
+
+
+
         self.config.image_index = example_infor.get("image_index",[0])
         assert len(self.config.image_index) == len(self.config.condition_image_path_list)
         self.config.new_prompt = example_infor["new_prompt"] + self.config.get("positive_prompt", "")
