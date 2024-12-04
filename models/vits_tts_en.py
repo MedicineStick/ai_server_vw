@@ -66,7 +66,16 @@ class VitsTTSEN(DSSO_MODEL):
                 sid = torch.LongTensor([4]).cuda().to(self.device)
                 audio = self.net_g_male.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=.667, noise_scale_w=0.8, length_scale=1)[0][0,0].data.cpu().float().numpy()
 
-        binary_stream = audio.tobytes()
-        encoded_audio = base64.b64encode(binary_stream).decode()
+        import scipy
+        f_temp = "./temp/test_en.wav"
+        scipy.io.wavfile.write(f_temp, 22050, audio)
+        with open(f_temp, 'rb') as f:
+            binary_data = f.read()
+
+        # Encode the binary data to base64
+        encoded_audio = base64.b64encode(binary_data).decode('utf-8')
+
+        #binary_stream = audio.tobytes()
+        #encoded_audio = base64.b64encode(binary_stream).decode()
         output_map['audio_data'] = encoded_audio
         return output_map 

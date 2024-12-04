@@ -81,6 +81,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
         print("valid_tensor.shape ",valid_tensor.shape)
         #torchaudio.save(f"./temp/{self.count}.wav",valid_tensor.unsqueeze(0),16000)
         self.count+=1
+        request["language_code"] = ""
         if request["language_code"]=="zh":
             initial_prompt = "以下是普通话的句子，这是一段会议记录。"
             result = self.asr_model.predict_func_delay(
@@ -91,10 +92,17 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                 fp16=torch.cuda.is_available(),
             )
 
-        else:
+        elif request["language_code"]=="en":
             result = self.asr_model.predict_func_delay(
                     audio = valid_tensor, 
                     language=request['language_code'],
+                    beam_size = self.realtime_asr_beam_size,
+                    fp16=torch.cuda.is_available(),
+                    )
+        
+        else:
+            result = self.asr_model.predict_func_delay(
+                    audio = valid_tensor, 
                     beam_size = self.realtime_asr_beam_size,
                     fp16=torch.cuda.is_available(),
                     )
