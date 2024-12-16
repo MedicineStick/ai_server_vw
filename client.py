@@ -219,15 +219,15 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_tesla_autopilot_1028",
-            "audio_url":"./temp/tesla_autopilot.mp3",
+            "task_id":"lskong2_1213townhall",
+            "audio_url":"./temp/1213townhall_firsthalf.m4a",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
             "task_type":1,
             "task_state":0,
             "lang":"en",
             "recognize_speakers":0,
-            "speaker_num":3,
+            "speaker_num":6,
             "trans":1 
             }
     #data = {'project_name': 'ai_meeting_assistant_chatbot', 'audio_url': 'temp/results/ai_meeting_results/6122881163484439284/ori.wav', 'task_type': 1, 'task_id': '68228891663110586451a', 'lang': 'en', 'recognize_speakers': 1, 'speaker_num': 2, 'task_state': 0}
@@ -1047,6 +1047,21 @@ async def jumper_cutter():
         print(f"Received from server: {response}")
 
 
+async def fun_clip():
+
+    data = {
+        "project_name":"fun_clip",
+        "input_video":"temp/funclip/boxing1.mp4",
+        "language":"en",
+        }
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    
+    async with websockets.connect(WS_URL) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(f"Received from server: {response}")
+
+
 def test_local_motion_clone():
     from myapp.motion_clone import Motion_Clone
     from models.server_conf import ServerConfig
@@ -1071,13 +1086,23 @@ def test_lang():
 
     print(f"Language: {language}")
 
+
+def test_audiofromvideo():
+    from moviepy.editor import VideoFileClip
+
+    # Load the video file
+    video = VideoFileClip("temp/funclip/boxing1.mp4")
+
+    # Extract audio and save it as a .mp3 file
+    video.audio.write_audiofile("temp/funclip/boxing1.wav")
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
-        #test_lang()
+        #test_audiofromvideo()
         #ai_meeting_chatbot_offline()
-        asyncio.run(online_asr_en_microphone())
+        asyncio.run(fun_clip())
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())

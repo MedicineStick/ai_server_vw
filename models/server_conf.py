@@ -131,6 +131,9 @@ class ServerConfig:
         self.jumpcutter_silent_speed = config["jumpcutter_silent_speed"]
         self.jumpcutter_output = config["jumpcutter_output"]
 
+        self.funclip_asr_beamsize = config["funclip_asr_beamsize"]
+
+
 
         
         

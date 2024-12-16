@@ -154,6 +154,8 @@ jumpcutter_sounded_speed : 1
 jumpcutter_silent_speed: 999999
 jumpcutter_output : "./temp/jumpcutter-master/video/"
 
+funclip_asr_beamsize : 8
+
 
 
 

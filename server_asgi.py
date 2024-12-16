@@ -26,6 +26,8 @@ print("--->Loading Motion_Clone...")
 from myapp.motion_clone import Motion_Clone
 print("--->Loading Jumper_Cutter...")
 from myapp.jumper_cutter import Jumper_Cutter
+print("--->Loading Fun_Clip...")
+from myapp.funclip import Fun_Clip
 
 
 import json
@@ -162,7 +164,14 @@ class WebSocketServer:
                     uploader=model_dict["uploader"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
-                )
+                ),
+                "fun_clip":Fun_Clip(
+                    global_conf,
+                    asr_model = model_dict["WhisperLarge"],
+                    llm_model=model_dict["DssoLLM"],
+                    executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
+                    ),
                 }
 
     async def handler(self, websocket, path):
