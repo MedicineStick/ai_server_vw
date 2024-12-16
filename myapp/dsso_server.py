@@ -4,7 +4,8 @@ from typing import Dict
 import pynvml
 from abc import ABC, abstractmethod
 from models.server_conf import ServerConfig
-import time
+import threading
+import asyncio
 def get_gpu_mem_info(gpu_id:int)->(float,float,float):
     pynvml.nvmlInit()
     if gpu_id<0 or gpu_id>=pynvml.nvmlDeviceGetCount():
@@ -36,6 +37,8 @@ class DSSO_SERVER(ABC):
         self._need_mem = 0.0
         self._available = True
         self._time_blocker = time_blocker
+        self.lock = asyncio.Lock()
+        self.lock1 = threading.Lock()
 
     def load_args(self, dsso_args:Dict[str,str]):
         for k,v in dsso_args.items():
@@ -68,41 +71,20 @@ class DSSO_SERVER(ABC):
         pass
 
     async def asyn_forward_with_locker(self, websocket,message):
-        while True:
-            if self._available:
-                self._available = False
-                try:
-                    await self.asyn_forward(websocket,message)
-                except Exception as error:
-                    print('Error: ', error)
-                finally:
-                    self._available = True
-                    break
-            else:
-                time.sleep(self._time_blocker)
+        
+        async with self.lock:
+            await self.asyn_forward(websocket,message)
+        
 
     @abstractmethod
     def dsso_forward(self,req:Dict)->Dict:
         pass
     
     def dsso_forward_with_locker(self,req:Dict)->Dict:
-        self._available = False
         output = {}
         output['state'] = ""
-        """
-        output,flag = self.dsso_forward(req)
-        output['state'] = 'finished'
-        self._available = True
-        return output,flag
-        """
-        try:
-            output = self.dsso_forward(req)
-        except Exception as error:
-            print('Error: ', error)
-            output['state'] += str(error)
-        finally:
-            self._available = True
-            return output
+        with self.lock1:
+            return self.dsso_forward(req)
 
     @abstractmethod
     def dsso_init(self,req:Dict = None)->bool:

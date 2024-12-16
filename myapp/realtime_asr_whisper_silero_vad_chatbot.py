@@ -57,14 +57,14 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
     async def asyn_forward(self, websocket,message):
         import json
         print("run_in_executor 1")
-        r1 = await asyncio.get_running_loop().run_in_executor(self.executor, self.dsso_forward, message)
+        r1 = self.dsso_forward(message)
         print("run_in_executor 1 done") 
         if r1['if_wait']:
             print("await websocket.send(json.dumps(r1))")
             await websocket.send(json.dumps(r1))
             print("await websocket.send(json.dumps(r1)) done")
             print("run_in_executor 2")
-            r2 = await asyncio.get_running_loop().run_in_executor(self.executor, self.__execute_task, message)
+            r2 = self.__execute_task(message)
             print("run_in_executor 2 done")
             r3 = {**r1, **r2}
             r3['if_wait'] = False
@@ -168,7 +168,7 @@ class Realtime_ASR_Whisper_Silero_Vad_Chatbot(DSSO_SERVER):
                 result["audio_data"] = self.en_tts_model.predict_func_delay(text=response_text,gender=0)["audio_data"]
             else:
                 result["audio_data"] = None
-
+        print("langid.classify")
         return result
 
     def dsso_forward(self, request):

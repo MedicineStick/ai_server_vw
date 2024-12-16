@@ -185,6 +185,7 @@ class WebSocketServer:
         print('--->Start server! -_-')
         async with websockets.serve(self.handler, self.host, self.port):
             await asyncio.Future()  # Run forever
+            
 
 if __name__ == '__main__':
     

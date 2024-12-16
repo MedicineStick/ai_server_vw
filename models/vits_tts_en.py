@@ -51,6 +51,7 @@ class VitsTTSEN(DSSO_MODEL):
         output_map = {}
         gender = kwargs["gender"]
         text = kwargs["text"]
+        text = str(text).replace('\n',' ').replace('\t',' ').strip()
 
         if gender ==0:
             stn_tst = get_text(text, self.hps_female)
