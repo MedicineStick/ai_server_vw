@@ -8,8 +8,8 @@ import asyncio
 import urllib
 import shutil
 import os
-from models.dsso_util import audio_preprocess,process_timestamps,trim_audio
-
+from models.dsso_util import audio_preprocess
+from moviepy.editor import VideoFileClip
 class Fun_Clip(DSSO_SERVER):
     def __init__(self,
                  conf:ServerConfig,
@@ -38,20 +38,21 @@ class Fun_Clip(DSSO_SERVER):
 
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {"video":""}
-        video = request["input_video"]
         language = request["language"]
-        audio = "./temp/funclip/funclip.wav"
-        resampled_audio = "./temp/funclip/funclip1.wav"
+        name = request["name"]
+        audio = f"./temp/funclip/{name}.wav"
+        resampled_audio = f"./temp/funclip/{name}1.wav"
+        local_video = f"./temp/funclip/{name}.mp4"
         if 'http' in request["input_video"]:
-            urllib.request.urlretrieve(request["input_video"], "./temp/funclip.mp4")
-            video = "./temp/funclip.mp4"
+            urllib.request.urlretrieve(request["input_video"], local_video)
         else:
-            if os.path.exists(video):
+            if os.path.exists(local_video):
                 pass
             else:
-                shutil.copy(request["input_video"], "./temp/funclip.mp4")
-                video = "./temp/funclip.mp4"
+                shutil.copy(request["input_video"], local_video)
 
+        video = VideoFileClip(local_video)
+        video.audio.write_audiofile(audio)
         
         print('--->audio_preprocess...')
         audio_preprocess(audio_file=audio,
@@ -76,4 +77,17 @@ class Fun_Clip(DSSO_SERVER):
                             beam_size = self.conf.funclip_asr_beamsize
                         )
         output_map["result"] = result['segments']
+
+        segments = []
+
+        for segment in result['segments']:
+            segments.append(
+                {
+                    "start":segment["start"],
+                    "end":segment["end"],
+                    "text":segment["text"],
+                    }
+                
+                )
+        output_map["result"] = segments
         return output_map
