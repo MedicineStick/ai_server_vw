@@ -48,7 +48,7 @@ ai_meeting_max_decode : 999999
 #是否输出原始转写结果，0关，1开
 ai_meeting_if_write_asr: 1
 # 转写模型写结果的时间间隔，默认20
-ai_meeting_transcribe_gap : 40
+ai_meeting_transcribe_gap : 10
 # beam_size
 ai_meeting_beam_size: 4
 # 是否贪心解码

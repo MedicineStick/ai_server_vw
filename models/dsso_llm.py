@@ -1,5 +1,3 @@
-
-
 from models.dsso_model import DSSO_MODEL
 from models.server_conf import ServerConfig
 import json
@@ -10,7 +8,6 @@ class DssoLLM(DSSO_MODEL):
         super().__init__(time_blocker=conf.time_blocker)
         self.if_available = True
         self.conf = conf
-
         
     def predict_func(self, **kwargs)->dict:
         prompt = kwargs["prompt"]

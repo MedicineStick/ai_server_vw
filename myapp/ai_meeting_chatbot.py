@@ -15,7 +15,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 from typing import Union
 from collections import Counter
-from models.dsso_util import CosUploader
+from models.dsso_util import CosUploader, convert_to_lrc
 import json
 import urllib.request
 import logging
@@ -695,6 +695,8 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                     transcribe_gap=self.conf.ai_meeting_transcribe_gap,
                     text_encoding=self.conf.ai_meeting_output_encoding
                     )
+                convert_to_lrc(self.rec_file,self.lrc_file)
+                
             
         if not os.path.exists(self.concated_wav):
             if len(output_tensors) > 1:
@@ -832,7 +834,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         self.diar_file = self.task_path +'/' + 'diar.txt'
         self.sum_file = self.task_path +'/' + 'sum.txt'
         self.diar_sum_file = self.task_path +'/' + 'diar_sum.txt'
-
+        self.lrc_file = self.task_path +'/' + 'rec.lrc'
         self.rec_json = self.task_path +'/' + 'rec.json'
         self.diar_json = self.task_path +'/' + 'diar.json'
         self.sum_json = self.task_path +'/' + 'sum.json'

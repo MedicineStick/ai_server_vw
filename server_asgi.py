@@ -182,7 +182,10 @@ class WebSocketServer:
             
             if isinstance(message, str) and 'project_name' in message:
                 message_dict = json.loads(message)
-                message_dict['task_id'] = task_id_asr
+                if "task_id" in message_dict.keys():
+                    pass
+                else:
+                    message_dict['task_id'] = task_id_asr
                 model_name = message_dict['project_name']
                 if "asr" in model_name:
                     pass
