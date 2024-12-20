@@ -7,7 +7,7 @@ def convert_to_lrc(input_filename, output_filename):
 
     # Open the output LRC file
     with open(output_filename, 'w') as outfile:
-        for i in range(0, len(lines), 2):
+        for i in range(0, len(lines)-1):
             # Parse the start time and the lyrics
             time_line = lines[i].strip()
             lyrics_line = lines[i+1].strip()

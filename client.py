@@ -219,7 +219,7 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_1213townhall",
+            "task_id":"lskong2_1213townhall_1",
             "audio_url":"./temp/1213townhall_firsthalf.m4a",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
@@ -228,7 +228,7 @@ async def ai_meeting_chatbot():
             "lang":"en",
             "recognize_speakers":0,
             "speaker_num":6,
-            "trans":1 
+            "trans":0 
             }
     #data = {'project_name': 'ai_meeting_assistant_chatbot', 'audio_url': 'temp/results/ai_meeting_results/6122881163484439284/ori.wav', 'task_type': 1, 'task_id': '68228891663110586451a', 'lang': 'en', 'recognize_speakers': 1, 'speaker_num': 2, 'task_state': 0}
     encoded_data = json.dumps(data) #.encode("utf-8")
@@ -1047,12 +1047,14 @@ async def jumper_cutter():
         print(f"Received from server: {response}")
 
 
-async def fun_clip():
+async def fun_clip_step1():
 
     data = {
         "project_name":"fun_clip",
         "input_video":"temp/funclip/boxing1.mp4",
         "language":"en",
+        "step":0,
+        "name":"stststw"
         }
     encoded_data = json.dumps(data) #.encode("utf-8")
     
@@ -1060,6 +1062,27 @@ async def fun_clip():
         await websocket.send(encoded_data)
         response = await websocket.recv()
         print(f"Received from server: {response}")
+
+async def fun_clip_step2():
+
+    data = {
+        "project_name":"fun_clip",
+        "input_video":"temp/funclip/boxing1.mp4",
+        "language":"en",
+        "step":1,
+        "name":"stststw",
+        "segment_index":[1]
+        }
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    
+    async with websockets.connect(WS_URL) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(f"Received from server: {response}")
+
+def test_fun_clip():
+    from models.dsso_util import  cut_and_concatenate_video
+    cut_and_concatenate_video("./temp/funclip/stststw/stststw.mp4",[[10,20]],"./temp/funclip/stststw/stststw_cliped.mp4")
 
 
 def test_local_motion_clone():
@@ -1101,8 +1124,8 @@ if __name__ =="__main__":
 
     if len(sys.argv)<2:
         #test_audiofromvideo()
-        #ai_meeting_chatbot_offline()
-        asyncio.run(fun_clip())
+        test_fun_clip()
+        #asyncio.run(fun_clip_step2())
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
         asyncio.run(forgery())

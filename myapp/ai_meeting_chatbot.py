@@ -15,7 +15,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 from typing import Union
 from collections import Counter
-from models.dsso_util import CosUploader, convert_to_lrc
+from models.dsso_util import CosUploader, convert_to_lrc, write_json
 import json
 import urllib.request
 import logging
@@ -100,7 +100,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
         else:
             converted_dict = {int(k): v for k, v in output.items()}
             return converted_dict
-    
+
     def chat_with_bot(self,prompt:str)->dict:
         try:
             data = {"prompt":prompt, "type":'101','stream':False}
@@ -142,11 +142,6 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
             else:
                 return self.chat_with_bot_timeout(prompt,count)
         return output
-
-    def write_json(self,json_data:dict, file_path:str):
-        json_data = json.dumps(json_data)
-        with open(file_path, "w") as file:
-             file.write(json_data)
 
     def post_preprocess_asr_result(
         self,
@@ -685,7 +680,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                 )
             
             print('--->dumping asr result...')
-            self.write_json(self.global_result['asr_result'],self.rec_json)
+            write_json(self.global_result['asr_result'],self.rec_json)
 
             if self.conf.ai_meeting_if_write_asr:
                 print('--->Writing asr result...')
@@ -751,7 +746,7 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                         self.global_result['state'] += (str(error).strip()+'\n')
 
                 print("--->dumping diarization result...")
-                self.write_json(self.global_result['diarization_result'],self.diar_json)
+                write_json(self.global_result['diarization_result'],self.diar_json)
             
             if self.conf.ai_meeting_if_write_msdp:
                 print("--->write_msdp_result...")
@@ -770,9 +765,9 @@ class AI_Meeting_Chatbot(DSSO_SERVER):
                     self.conf.ai_meeting_prompt_en_summarize
                     )
             print("--->dumping sum result...")
-            self.write_json(self.global_result['summary_result'],self.sum_json)
+            write_json(self.global_result['summary_result'],self.sum_json)
             print("--->dumping sum diar result...")
-            self.write_json(self.global_result['summary_diarization_result'],self.diar_sum_json)
+            write_json(self.global_result['summary_diarization_result'],self.diar_sum_json)
 
 
             print("--->write_summary_result...")

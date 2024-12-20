@@ -168,7 +168,7 @@ class WebSocketServer:
                 "fun_clip":Fun_Clip(
                     global_conf,
                     asr_model = model_dict["WhisperLarge"],
-                    llm_model=model_dict["DssoLLM"],
+                    uploader=model_dict["uploader"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),

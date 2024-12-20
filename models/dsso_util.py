@@ -22,6 +22,36 @@ import cv2
 import requests
 import numpy as np
 from io import BytesIO
+import re
+import json
+from moviepy import VideoFileClip, concatenate_videoclips
+
+def cut_and_concatenate_video(input_video_path, timestamp_list, output_video_path):
+
+    print("input_video_path: ",input_video_path)
+    print("timestamp_list: ",timestamp_list)
+    print("output_video_path: ",output_video_path)
+
+    clips = []
+    
+    # Load the video
+    video = VideoFileClip(input_video_path)
+
+    # Cut the video at specified timestamp points
+    for start, end in timestamp_list:
+        clip = video.subclipped( start_time=start, end_time=end)  # Cut the clip from start to end
+        clips.append(clip)
+
+    # Concatenate the clips together
+    final_clip = concatenate_videoclips(clips)
+
+    # Write the final concatenated video to a file
+    final_clip.write_videofile(output_video_path, codec="libx264")
+
+def write_json(json_data:dict, file_path:str):
+    json_data = json.dumps(json_data)
+    with open(file_path, "w") as file:
+            file.write(json_data)
 
 def convert_to_lrc(input_filename, output_filename):
     # Read the input file
@@ -30,7 +60,7 @@ def convert_to_lrc(input_filename, output_filename):
 
     # Open the output LRC file
     with open(output_filename, 'w') as outfile:
-        for i in range(0, len(lines), 2):
+        for i in range(0, len(lines)-1):
             # Parse the start time and the lyrics
             time_line = lines[i].strip()
             lyrics_line = lines[i+1].strip()
