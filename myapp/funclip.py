@@ -9,7 +9,7 @@ import urllib
 import shutil
 import os
 from models.dsso_util import audio_preprocess, write_json, cut_and_concatenate_video, CosUploader
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 import json
 
 class Fun_Clip(DSSO_SERVER):
@@ -39,6 +39,7 @@ class Fun_Clip(DSSO_SERVER):
         pass
 
     def dsso_forward(self, request: Dict) -> Dict:
+        print(f"Funclip process started...")
         name = request["name"]
         folder_path = f"./temp/funclip/{name}"
         audio = f"{folder_path}/{name}.wav"
@@ -48,7 +49,7 @@ class Fun_Clip(DSSO_SERVER):
         json_file = f"{folder_path}/{name}.json"
         output_map = {"result":None}
 
-        if request["step"] == 0:
+        if int(request["step"]) == 0:
             language = request["language"]
             
             if not os.path.exists(folder_path):
@@ -108,7 +109,7 @@ class Fun_Clip(DSSO_SERVER):
             write_json(output_map,json_file)
             return output_map
         
-        elif request["step"] == 1:
+        elif int(request["step"]) == 1:
             if os.path.exists(json_file):
                 with open(json_file) as fr:
                     output_map = json.load(fr)

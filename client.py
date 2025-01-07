@@ -219,15 +219,15 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_1213townhall_1",
-            "audio_url":"./temp/1213townhall_firsthalf.m4a",
+            "task_id":"lskong2_1225_uk",
+            "audio_url":"./temp/Voice 241223_175041.m4a",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
             "task_type":1,
             "task_state":0,
             "lang":"en",
             "recognize_speakers":0,
-            "speaker_num":6,
+            "speaker_num":2,
             "trans":0 
             }
     #data = {'project_name': 'ai_meeting_assistant_chatbot', 'audio_url': 'temp/results/ai_meeting_results/6122881163484439284/ori.wav', 'task_type': 1, 'task_id': '68228891663110586451a', 'lang': 'en', 'recognize_speakers': 1, 'speaker_num': 2, 'task_state': 0}
@@ -1049,13 +1049,7 @@ async def jumper_cutter():
 
 async def fun_clip_step1():
 
-    data = {
-        "project_name":"fun_clip",
-        "input_video":"temp/funclip/boxing1.mp4",
-        "language":"en",
-        "step":0,
-        "name":"stststw"
-        }
+    data = {'project_name': 'fun_clip', 'language': 'en', 'input_video': 'temp/funclip/boxing1.mp4', 'step': '0', 'name': '1876446377458929664', 'task_id': '172.27.1.352463'}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -1178,6 +1172,10 @@ if __name__ =="__main__":
         asyncio.run(motion_clone())
     elif int(sys.argv[1]) == 25:
         asyncio.run(jumper_cutter())
+    elif int(sys.argv[1]) == 26:
+        asyncio.run(fun_clip_step1())
+    elif int(sys.argv[1]) == 27:
+        asyncio.run(fun_clip_step2())
     
 
 
