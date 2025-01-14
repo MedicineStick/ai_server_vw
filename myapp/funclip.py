@@ -99,8 +99,8 @@ class Fun_Clip(DSSO_SERVER):
             for segment in result['segments']:
                 segments.append(
                     {
-                        "start":segment["start"],
-                        "end":segment["end"],
+                        "start":round(segment["start"],2),
+                        "end":round(segment["end"],2),
                         "text":segment["text"],
                         }
                     
