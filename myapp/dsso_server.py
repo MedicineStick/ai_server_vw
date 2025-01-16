@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 from models.server_conf import ServerConfig
 import threading
 import asyncio
-def get_gpu_mem_info(gpu_id:int)->(float,float,float):
+
+def get_gpu_mem_info(gpu_id: int) -> tuple[float, float, float]:
     pynvml.nvmlInit()
     if gpu_id<0 or gpu_id>=pynvml.nvmlDeviceGetCount():
         print("gpu {} doesn't exist!\n".format(gpu_id))

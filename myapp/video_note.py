@@ -29,6 +29,11 @@ class VIDEO_NOTE(DSSO_SERVER):
         self.time_blocker = time_blocker
         self.asr_model = asr_model
         self.llm_model = llm_model
+
+        self.outline_prompt = ""
+        self.summary_prompt = ""
+        self.key_words_prompt = ""
+        
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
