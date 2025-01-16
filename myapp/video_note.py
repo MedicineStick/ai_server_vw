@@ -9,7 +9,7 @@ from models.dsso_model import DSSO_MODEL
 import os
 import urllib
 import shutil
-from models.dsso_util import audio_preprocess, write_json, cut_and_concatenate_video, CosUploader
+from models.dsso_util import audio_preprocess, write_json, CosUploader
 from moviepy import VideoFileClip
 class VIDEO_NOTE(DSSO_SERVER):
     def __init__(
