@@ -113,4 +113,9 @@ class VIDEO_NOTE(DSSO_SERVER):
                 )
         output_map["result"] = segments
         write_json(output_map,json_file)
+
+        transcript = "".join([ seg["text"] for seg in segments])
+
+        
+
         return output_map

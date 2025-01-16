@@ -65,7 +65,7 @@ class DSSO_SERVER(ABC):
         if need_mem>0:
             self._need_mem = need_mem
         else:
-            self._need_mem = 0.
+            self._need_mem = 0. 
             
     @abstractmethod
     async def asyn_forward(self, websocket,message):
