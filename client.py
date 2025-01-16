@@ -1060,12 +1060,7 @@ async def fun_clip_step1():
 async def fun_clip_step2():
 
     data = {
-        "project_name":"fun_clip",
-        "input_video":"temp/funclip/boxing1.mp4",
-        "language":"en",
-        "step":1,
-        "name":"stststw",
-        "segment_index":[1]
+        'project_name': 'fun_clip', 'language': 'en', 'input_video': 'temp/funclip/boxing1.mp4', 'step': '1', 'name': '1876892364769988600', 'segment_index': [0]
         }
     encoded_data = json.dumps(data) #.encode("utf-8")
     
@@ -1113,12 +1108,21 @@ def test_audiofromvideo():
     # Extract audio and save it as a .mp3 file
     video.audio.write_audiofile("temp/funclip/boxing1.wav")
 
+def test2():
+    years = 10
+    base = 169
+    rate = 0.01
+    addition = 30
+    for _ in range(years):
+        base = base*(1+rate)+addition
+    print(base)
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
         #test_audiofromvideo()
-        test_fun_clip()
+        test2()
         #asyncio.run(fun_clip_step2())
         #vits_conversion()
     elif int(sys.argv[1]) == 1:

@@ -28,6 +28,8 @@ print("--->Loading Jumper_Cutter...")
 from myapp.jumper_cutter import Jumper_Cutter
 print("--->Loading Fun_Clip...")
 from myapp.funclip import Fun_Clip
+print("--->Loading VIDEO_NOTE...")
+from myapp.video_note import VIDEO_NOTE
 
 
 import json
@@ -171,6 +173,14 @@ class WebSocketServer:
                     uploader=model_dict["uploader"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
+                    ),
+                "video_note":VIDEO_NOTE(
+                        global_conf,
+                        asr_model=model_dict["WhisperLarge"],
+                        llm_model=model_dict["DssoLLM"],
+                        uploader=model_dict["uploader"],
+                        executor=self.executor,
+                        time_blocker=global_conf.time_blocker,
                     ),
                 }
 
