@@ -219,8 +219,8 @@ async def ai_meeting():
 
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
-            "task_id":"lskong2_1225_uk",
-            "audio_url":"./temp/Voice 241223_175041.m4a",
+            "task_id":"lskong2_20250116_uk",
+            "audio_url":"/home/tione/notebook/lskong2/temp/media/Voice_250116_183302.m4a",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
             "task_type":1,

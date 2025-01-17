@@ -11,6 +11,7 @@ import urllib
 import shutil
 from models.dsso_util import audio_preprocess, write_json, CosUploader
 from moviepy import VideoFileClip
+import langid
 class VIDEO_NOTE(DSSO_SERVER):
     def __init__(
             self,
@@ -30,9 +31,13 @@ class VIDEO_NOTE(DSSO_SERVER):
         self.asr_model = asr_model
         self.llm_model = llm_model
 
-        self.outline_prompt = ""
-        self.summary_prompt = ""
-        self.key_words_prompt = ""
+        self.en_outline_prompt = "generate an outline of the following article"
+        self.en_summary_prompt = "generate a summary of the following article"
+        self.en_key_words_prompt = "generate some keywords of the following article"
+
+        self.cn_outline_prompt = "针对以下文章生成一段大纲 "
+        self.cn_summary_prompt = "针对以下文章生成一段总结 "
+        self.cn_key_words_prompt = "针对以下文章生成一些文章关键词 "
         
         
     def dsso_reload_conf(self,conf:ServerConfig):
@@ -114,7 +119,15 @@ class VIDEO_NOTE(DSSO_SERVER):
         output_map["result"] = segments
         write_json(output_map,json_file)
 
-        transcript = "".join([ seg["text"] for seg in segments])
+        trans_text = "".join([ seg["text"] for seg in segments])
+        language, _ = langid.classify(trans_text)
+
+        if language == "zh":
+            pass
+        elif language == "en":
+            pass
+        else:
+            pass
 
         
 
