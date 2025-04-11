@@ -13,17 +13,17 @@ from myapp.mbart_translation import mbart_translation
 #print("--->Loading Video_Generation...")
 #from myapp.video_generation_interface import Video_Generation_Interface
 print("--->Loading Super_Resolution_Video...")
-from myapp.super_resulution_video import Super_Resolution_Video
+#from myapp.super_resulution_video import Super_Resolution_Video
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
 from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
 print("--->Loading Sam2...")
-from myapp.sam2 import Sam2
+#from myapp.sam2 import Sam2
 print("--->Loading Sam1...")
 from myapp.sam1 import Sam1
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 print("--->Loading Motion_Clone...")
-from myapp.motion_clone import Motion_Clone
+#from myapp.motion_clone import Motion_Clone
 print("--->Loading Jumper_Cutter...")
 from myapp.jumper_cutter import Jumper_Cutter
 print("--->Loading Fun_Clip...")
@@ -37,16 +37,25 @@ import asyncio
 import websockets
 import concurrent.futures
 from models.server_conf import ServerConfig
-
+print("AiClassificationModel")
 from models.ai_classification_model import AiClassificationModel
+print("WarningLightModel")
 from models.warning_light_model import WarningLightModel
+print("WhisperLarge")
 from models.whisper_large import WhisperLarge
+print("WhisperSmall")
 from models.whisper_small import WhisperSmall
+print("ForgeryDetectionModel")
 from models.forgery_detection_model import ForgeryDetectionModel
+print("MbartTranslationModel")
 from models.mbart_translation_model import MbartTranslationModel
+print("vit cn")
 from models.vits_tts_cn import VitsTTSCN
+print("vit en")
 from models.vits_tts_en import VitsTTSEN
+print("esr gan")
 from models.esr_gan import ESRGan
+print("vad")
 from models.silero_vad import Silero_VAD
 from models.dsso_llm import DssoLLM
 from models.dsso_util import CosUploader
@@ -126,11 +135,13 @@ class WebSocketServer:
                     ),
                     
                 #"Video_Generation_Interface":Video_Generation_Interface(global_conf),
+                """
                 "super_resulution_video":Super_Resolution_Video(
                     global_conf,
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
+                """
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
                     model_dict["WhisperSmall"],
@@ -139,9 +150,11 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
+                """
                 "sam2":Sam2(global_conf,
                             executor=self.executor,
                             time_blocker=global_conf.time_blocker),
+                """
                 "sam1":Sam1(global_conf,
                             executor=self.executor,
                             time_blocker=global_conf.time_blocker),
@@ -155,12 +168,14 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
+                """
                 "motion_clone":Motion_Clone(
                     conf=global_conf,
                     uploader=model_dict["uploader"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                 ),
+                """
                 "jumper_cutter":Jumper_Cutter(
                     conf=global_conf,
                     uploader=model_dict["uploader"],

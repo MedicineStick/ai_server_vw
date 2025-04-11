@@ -22,8 +22,7 @@ import scipy
 import re
 import numpy as np 
 from scipy.io.wavfile import write
-WS_URL = 'ws://172.27.11.12:9501/ws'  # Replace with your WebSocket URL
-import pyaudio
+WS_URL = 'ws://0.0.0.0:9501/ws'  # Replace with your WebSocket URL
 import torchaudio
 
 def inner_func(audio:int,name:str):
@@ -147,7 +146,7 @@ def test():
 
 async def warning_detection1():
 
-    data = {"project_name":"warning_light_detection","image_url":"./temp/isolation_warning_light_fake_2895.jpg"}
+    data = {"project_name":"warning_light_detection","image_url":"./temp/demo/isolation_warning_light_fake_2895.jpg"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -158,7 +157,7 @@ async def warning_detection1():
 
 async def forgery():
 
-    data = {"project_name":"forgery_detection","image_url":"../3.forgery_detection/temp/0.png"}
+    data = {"project_name":"forgery_detection","image_url":"./temp/demo/0.png"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -171,7 +170,7 @@ async def forgery():
 async def super_resolution():
 
 
-    data = {"project_name":"super_resolution","image_url":"./temp/1.png"}
+    data = {"project_name":"super_resolution","image_url":"./temp/demo/1.png"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -184,7 +183,7 @@ async def super_resolution():
 
 
 async def ai_class():
-    photos_path2 = "../../data/AI_Classify/sdv1_5/train/class1/000_sdv5_00172.png"
+    photos_path2 = "./temp/demo/1.png"
     data = {"project_name":"ai_classification","image_url":photos_path2}
     encoded_data = json.dumps(data) #.encode("utf-8")
     import shutil
@@ -220,7 +219,7 @@ async def ai_meeting():
 async def ai_meeting_chatbot():
     data = {"project_name":"ai_meeting_assistant_chatbot",
             "task_id":"lskong2_20250116_uk",
-            "audio_url":"/home/tione/notebook/lskong2/temp/media/Voice_250116_183302.m4a",
+            "audio_url":"./temp/demo/tesla_autopilot.wav",
             #"audio_url":"./temp/voice20240124.m4a",
             #"audio_url":"./temp/luoxiang.wav",
             "task_type":1,

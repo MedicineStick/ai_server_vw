@@ -1,6 +1,3 @@
-nvidia-smi
-pwd
-ls
 #yum install -y espeak
 #yum install -y portaudio
 #export PATH=../../softwares/anaconda3/envs/dsd/bin:../../softwares/ffmpeg-6.1-tione1/:$PATH

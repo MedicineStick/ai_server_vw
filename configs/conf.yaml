@@ -1,4 +1,4 @@
-gpu_id : 3
+gpu_id : 5
 
 time_blocker: 1
 
@@ -111,9 +111,9 @@ translation_mem : 2400
 translation_model_path : "./checkpoints/translation/"
 
 video_generation_mem : 10000
-video_generation_t5_device : 2
-video_generation_vae_device : 2
-video_generation_sd_device : 3
+video_generation_t5_device : 5
+video_generation_vae_device : 5
+video_generation_sd_device : 5
 
 
 realtime_asr_whisper_model_name: "small"
@@ -123,13 +123,13 @@ realtime_asr_gap_ms : 50
 realtime_asr_beam_size : 8
 realtime_asr_min_silence_duration_ms: 100
 
-sam2_device_id : 3
+sam2_device_id : 5
 sam2_video_dir : "./temp/results/sam2/"
 sam2_checkpoint : "./checkpoints/sam2_models/sam2_hiera_base_plus.pt"
 sam2_model_cfg : "sam2_hiera_b_plus.yaml"
 sam2_vis_frame_stride : 30
 
-sam1_device_id: 3
+sam1_device_id: 5
 sam1_checkpoint: "./checkpoints/sam1_models/sam_vit_h_4b8939.pth"
 sam1_model_type : "vit_h"
 
