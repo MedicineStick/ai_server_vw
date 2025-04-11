@@ -9,13 +9,15 @@ app = FastAPI()
 WS_SERVER_URL = "ws://localhost:9501/ws"  # <-- Your actual WebSocket server URL
 
 class Payload(BaseModel):
-    message: str
+    project_name: str
+    image_url: str
+
 
 @app.post("/api/send")
 async def send_to_websocket(payload: Payload):
     try:
         async with websockets.connect(WS_SERVER_URL) as websocket:
-            await websocket.send(payload.message)
+            await websocket.send(payload.model_dump_json())
             response = await websocket.recv()
             return response
     except Exception as e:
