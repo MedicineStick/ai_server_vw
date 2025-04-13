@@ -15,7 +15,7 @@ from PIL import Image
 class ESRGan(DSSO_MODEL):
     def __init__(self,conf:ServerConfig):
         super().__init__(time_blocker=conf.time_blocker)
-        print("--->initialize Super_Resolution...")
+        print("--->initialize ESRGan...")
         self.conf = conf
         
     def predict_func(self, **kwargs)->dict:

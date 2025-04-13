@@ -37,25 +37,16 @@ import asyncio
 import websockets
 import concurrent.futures
 from models.server_conf import ServerConfig
-print("AiClassificationModel")
 from models.ai_classification_model import AiClassificationModel
-print("WarningLightModel")
 from models.warning_light_model import WarningLightModel
-print("WhisperLarge")
 from models.whisper_large import WhisperLarge
-print("WhisperSmall")
 from models.whisper_small import WhisperSmall
-print("ForgeryDetectionModel")
 from models.forgery_detection_model import ForgeryDetectionModel
-print("MbartTranslationModel")
 from models.mbart_translation_model import MbartTranslationModel
-print("vit cn")
 from models.vits_tts_cn import VitsTTSCN
-print("vit en")
 from models.vits_tts_en import VitsTTSEN
-print("esr gan")
 from models.esr_gan import ESRGan
-print("vad")
+from models.gfp_gan import GFPGan
 from models.silero_vad import Silero_VAD
 from models.dsso_llm import DssoLLM
 from models.dsso_util import CosUploader
@@ -82,6 +73,7 @@ class WebSocketServer:
             "VitsTTSCN":VitsTTSCN(global_conf),
             "VitsTTSEN":VitsTTSEN(global_conf),
             "ESRGan":ESRGan(global_conf),
+            "GFPGan":GFPGan(global_conf),
             "SileroVAD":Silero_VAD(global_conf),
             "DssoLLM":DssoLLM(global_conf),
             "uploader":CosUploader(global_conf.cos_uploader_mode),
@@ -122,7 +114,7 @@ class WebSocketServer:
 
                 "super_resolution":Super_Resolution(
                     global_conf,
-                    model=model_dict["ESRGan"],
+                    model=model_dict["GFPGan"],
                     uploader=model_dict["uploader"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
