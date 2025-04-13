@@ -1,1 +1,1 @@
-uvicorn http_to_ws_bridge:app --host 0.0.0.0 --port 8080
+uvicorn http_to_ws_bridge:app --host 0.0.0.0 --port 9502 > logs/service.log 2>&1 &
