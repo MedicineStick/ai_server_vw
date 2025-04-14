@@ -53,17 +53,18 @@ class GFPGan(DSSO_MODEL):
             input_image = kwargs["image_url"]
             img_path = "third_party/GFPGAN/inputs/whole_imgs/"
             img_name = input_image[input_image.rfind('/') + 1:]
+            saved_path = os.path.join(img_path,img_name)
             if 'http' in input_image:
-                    urllib.request.urlretrieve(os.path.join(img_path,img_name), input_image)
+                    urllib.request.urlretrieve(input_image,saved_path)
             else:
-                if os.path.exists(os.path.join(img_path,img_name)):
+                if os.path.exists(saved_path):
                     pass
                 else:
-                    shutil.copy(input_image, os.path.join(img_path,img_name))
+                    shutil.copy(input_image, saved_path)
 
             args = GFPgan_args()
             args.upscale = self.conf.super_resolution_outscale
-            args.input = os.path.join(img_path,img_name)
+            args.input = saved_path
             os.makedirs(args.output, exist_ok=True)
 
             # ------------------------ set up background upsampler ------------------------

@@ -14,8 +14,8 @@ from myapp.mbart_translation import mbart_translation
 #from myapp.video_generation_interface import Video_Generation_Interface
 print("--->Loading Super_Resolution_Video...")
 #from myapp.super_resulution_video import Super_Resolution_Video
-print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
-from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
+#print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
+#from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
 print("--->Loading Sam2...")
 #from myapp.sam2 import Sam2
 print("--->Loading Sam1...")
@@ -133,7 +133,6 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                """
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
                     model_dict["WhisperSmall"],
@@ -142,7 +141,6 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                """
                 "sam2":Sam2(global_conf,
                             executor=self.executor,
                             time_blocker=global_conf.time_blocker),
@@ -150,7 +148,7 @@ class WebSocketServer:
                 "sam1":Sam1(global_conf,
                             executor=self.executor,
                             time_blocker=global_conf.time_blocker),
-                "realtime_asr_whisper_chatbot":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
+                "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
                     global_conf,
                     asr_model = model_dict["WhisperSmall"],
                     vad_model=model_dict["SileroVAD"],
