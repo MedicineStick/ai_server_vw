@@ -16,20 +16,20 @@ print("--->Loading Super_Resolution_Video...")
 #from myapp.super_resulution_video import Super_Resolution_Video
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
 from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
-print("--->Loading Sam2...")
+#print("--->Loading Sam2...")
 #from myapp.sam2 import Sam2
-print("--->Loading Sam1...")
-from myapp.sam1 import Sam1
+#print("--->Loading Sam1...")
+#from myapp.sam1 import Sam1
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
-print("--->Loading Motion_Clone...")
+#print("--->Loading Motion_Clone...")
 #from myapp.motion_clone import Motion_Clone
-print("--->Loading Jumper_Cutter...")
-from myapp.jumper_cutter import Jumper_Cutter
-print("--->Loading Fun_Clip...")
-from myapp.funclip import Fun_Clip
-print("--->Loading VIDEO_NOTE...")
-from myapp.video_note import VIDEO_NOTE
+#print("--->Loading Jumper_Cutter...")
+#from myapp.jumper_cutter import Jumper_Cutter
+#print("--->Loading Fun_Clip...")
+#from myapp.funclip import Fun_Clip
+#print("--->Loading VIDEO_NOTE...")
+#from myapp.video_note import VIDEO_NOTE
 
 
 import json
@@ -125,15 +125,6 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                    
-                #"Video_Generation_Interface":Video_Generation_Interface(global_conf),
-                """
-                "super_resulution_video":Super_Resolution_Video(
-                    global_conf,
-                    executor=self.executor,
-                    time_blocker=global_conf.time_blocker,
-                    ),
-                """
                 "realtime_asr_whisper":Realtime_ASR_Whisper_Silero_Vad(
                     global_conf,
                     model_dict["WhisperSmall"],
@@ -142,14 +133,6 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                """
-                "sam2":Sam2(global_conf,
-                            executor=self.executor,
-                            time_blocker=global_conf.time_blocker),
-                """
-                "sam1":Sam1(global_conf,
-                            executor=self.executor,
-                            time_blocker=global_conf.time_blocker),
                 "realtime_asr_whisper_chatbot":Realtime_ASR_Whisper_Silero_Vad_Chatbot(
                     global_conf,
                     asr_model = model_dict["WhisperSmall"],
@@ -160,14 +143,29 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                """
+                
+                
+                }
+
+    """
+                "super_resulution_video":Super_Resolution_Video(
+                    global_conf,
+                    executor=self.executor,
+                    time_blocker=global_conf.time_blocker,
+                    ),
+                "sam2":Sam2(global_conf,
+                            executor=self.executor,
+                            time_blocker=global_conf.time_blocker),
+                
+                "sam1":Sam1(global_conf,
+                            executor=self.executor,
+                            time_blocker=global_conf.time_blocker),
                 "motion_clone":Motion_Clone(
                     conf=global_conf,
                     uploader=model_dict["uploader"],
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                 ),
-                """
                 "jumper_cutter":Jumper_Cutter(
                     conf=global_conf,
                     uploader=model_dict["uploader"],
@@ -181,6 +179,7 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
+                
                 "video_note":VIDEO_NOTE(
                         global_conf,
                         asr_model=model_dict["WhisperLarge"],
@@ -189,7 +188,8 @@ class WebSocketServer:
                         executor=self.executor,
                         time_blocker=global_conf.time_blocker,
                     ),
-                }
+                """
+                
 
     async def handler(self, websocket, path):
         print("--->Connection from {} ".format(websocket.remote_address))
