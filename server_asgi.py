@@ -18,8 +18,8 @@ print("--->Loading Realtime_ASR_Whisper_Silero_Vad...")
 from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Vad
 #print("--->Loading Sam2...")
 #from myapp.sam2 import Sam2
-#print("--->Loading Sam1...")
-#from myapp.sam1 import Sam1
+print("--->Loading Sam1...")
+from myapp.sam1 import Sam1
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 #print("--->Loading Motion_Clone...")
@@ -143,7 +143,9 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                
+                "sam1":Sam1(global_conf,
+                            executor=self.executor,
+                            time_blocker=global_conf.time_blocker),
                 
                 }
 
@@ -154,10 +156,6 @@ class WebSocketServer:
                     time_blocker=global_conf.time_blocker,
                     ),
                 "sam2":Sam2(global_conf,
-                            executor=self.executor,
-                            time_blocker=global_conf.time_blocker),
-                
-                "sam1":Sam1(global_conf,
                             executor=self.executor,
                             time_blocker=global_conf.time_blocker),
                 "motion_clone":Motion_Clone(
