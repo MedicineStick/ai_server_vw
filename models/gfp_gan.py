@@ -166,7 +166,7 @@ class GFPGan(DSSO_MODEL):
                 imwrite(cmp_img, os.path.join(args.output, 'cmp', f'{basename}_{idx:02d}.png'))
 
             # save restored img
-            save_restore_path = ""
+            save_restore_path, save_restore_path_resized = "", ""
             if restored_img is not None:
                 if args.ext == 'auto':
                     extension = ext[1:]
@@ -175,11 +175,23 @@ class GFPGan(DSSO_MODEL):
 
                 if args.suffix is not None:
                     save_restore_path = os.path.join(args.output, 'restored_imgs', f'{basename}_{args.suffix}.{extension}')
+                    save_restore_path_resized = os.path.join(args.output, 'restored_imgs', f'{basename}_{args.suffix}_resized.{extension}')
                 else:
                     save_restore_path = os.path.join(args.output, 'restored_imgs', f'{basename}.{extension}')
+                    save_restore_path_resized = os.path.join(args.output, 'restored_imgs', f'{basename}.{extension}')
                 imwrite(restored_img, save_restore_path)
             print("save_restore_path: ",save_restore_path)
-            output_map["image1"] = Image.open(save_restore_path)
+
+            restore_img = cv2.imread(save_restore_path, cv2.IMREAD_COLOR)
+
+            if restore_img is None:
+                raise ValueError(f"Failed to load image from {save_restore_path}")
+
+            output_resized = cv2.resize(restore_img, (input_img.shape[1], input_img.shape[0]))
+
+            cv2.imwrite(save_restore_path_resized, output_resized)
+
+            output_map["image1"] = Image.open(save_restore_path_resized)
             output_map["image2"] = output_map["image1"]
 
             return output_map
