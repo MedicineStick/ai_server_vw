@@ -20,6 +20,8 @@ from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Va
 #from myapp.sam2 import Sam2
 print("--->Loading Sam1...")
 from myapp.sam1 import Sam1
+print("--->Loading ocr...")
+from myapp.ocr import OCR
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 #print("--->Loading Motion_Clone...")
@@ -50,7 +52,7 @@ from models.gfp_gan import GFPGan
 from models.silero_vad import Silero_VAD
 from models.dsso_llm import DssoLLM
 from models.dsso_util import CosUploader
-
+from models.ocr_model import OCR_Model
 class WebSocketServer:
     def __init__(self,
                 host='localhost',
@@ -77,7 +79,7 @@ class WebSocketServer:
             "SileroVAD":Silero_VAD(global_conf),
             "DssoLLM":DssoLLM(global_conf),
             "uploader":CosUploader(global_conf.cos_uploader_mode),
-
+            "ocr_model":OCR_Model(global_conf),
             }
         self.project_name_dict = {
                 "warning_light_detection":warning_light_detection(
@@ -146,7 +148,10 @@ class WebSocketServer:
                 "sam1":Sam1(global_conf,
                             executor=self.executor,
                             time_blocker=global_conf.time_blocker),
-                
+                "ocr":OCR(global_conf,
+                          model=model_dict["ocr_model"],
+                            executor=self.executor,
+                            time_blocker=global_conf.time_blocker),
                 }
 
     """
