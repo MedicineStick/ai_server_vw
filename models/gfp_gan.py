@@ -51,6 +51,10 @@ class GFPGan(DSSO_MODEL):
         output_map ={"image1":"","image2":""}
         with torch.no_grad():
             input_image = kwargs["image_url"]
+            if "scale" in kwargs.keys():
+                self.conf.super_resolution_outscale = int(kwargs["scale"])
+            else:
+                pass
             img_path = "third_party/GFPGAN/inputs/whole_imgs/"
             img_name = input_image[input_image.rfind('/') + 1:]
             saved_path = os.path.join(img_path,img_name)

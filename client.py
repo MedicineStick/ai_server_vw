@@ -170,7 +170,11 @@ async def forgery():
 async def super_resolution():
 
 
-    data = {"project_name":"super_resolution","image_url":"https://dsso-di-icp-prod-1322412301.cos.ap-shanghai.myqcloud.com/di-platform-static/docs/6e49e62e09285d6b1d81d3b4698fcfb8.png"}
+    data = {
+        "project_name":"super_resolution",
+        "image_url":"https://dsso-di-icp-prod-1322412301.cos.ap-shanghai.myqcloud.com/di-platform-static/docs/6e49e62e09285d6b1d81d3b4698fcfb8.png",
+        "scale":2,
+        }
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
