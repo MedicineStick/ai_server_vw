@@ -170,7 +170,7 @@ async def forgery():
 async def super_resolution():
 
 
-    data = {"project_name":"super_resolution","image_url":"./temp/demo/1.png"}
+    data = {"project_name":"super_resolution","image_url":"https://dsso-di-icp-prod-1322412301.cos.ap-shanghai.myqcloud.com/di-platform-static/docs/6e49e62e09285d6b1d81d3b4698fcfb8.png"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     
     async with websockets.connect(WS_URL) as websocket:
@@ -183,7 +183,7 @@ async def super_resolution():
 
 
 async def ai_class():
-    photos_path2 = "./temp/demo/1.png"
+    photos_path2 = "./temp/images/20250209_201835.jpg"
     data = {"project_name":"ai_classification","image_url":photos_path2}
     encoded_data = json.dumps(data) #.encode("utf-8")
     import shutil
@@ -1030,6 +1030,15 @@ async def motion_clone():
         response = await websocket.recv()
         print(f"Received from server: {response}")
 
+async def ocr():
+
+    data = {"project_name":"ocr","image_url":"./temp/demo/0.png"}
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    async with websockets.connect(WS_URL) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(f"Received from server: {response}")
+
 async def jumper_cutter():
 
     data = {
@@ -1179,7 +1188,8 @@ if __name__ =="__main__":
         asyncio.run(fun_clip_step1())
     elif int(sys.argv[1]) == 27:
         asyncio.run(fun_clip_step2())
-    
+    elif int(sys.argv[1]) == 28:
+        asyncio.run(ocr())
 
 
 
