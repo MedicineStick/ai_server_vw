@@ -24,7 +24,7 @@ warning_light_detection_class_num : 43
 super_resolution_mem : 1500
 super_resolution_tile_pad : 10
 super_resolution_pre_pad : 10
-super_resolution_outscale : 4
+super_resolution_outscale : 2
 super_resolution_tile : 200
 super_resolution_netscale : 4
 super_resolution_path : "./checkpoints/SR/RealESRGAN_x4plus.pth"
@@ -141,7 +141,7 @@ realtime_asr_adaptive_thresholding_chatbot: 2000
 
 
 ai_meeting_llm_timeout : 30
-ai_meeting_retry_count : 3
+ai_meeting_retry_count : 1
 
 
 realtime_asr_llm_timeout : 20

@@ -38,9 +38,9 @@ class Super_Resolution(DSSO_SERVER):
         output_map = {}
         output = self.model.predict_func_delay(image_url = request["image_url"])
         url1 = self.uploader.upload_image(output["image1"])
-        url2 = self.uploader.upload_image(output["image2"])
+        #url2 = self.uploader.upload_image(output["image2"])
         output_map["output_image_url"] = url1
-        output_map["download_url"] = url2
+        output_map["download_url"] = url1
         output_map['state'] = 'finished'
         return output_map
  
