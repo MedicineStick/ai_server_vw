@@ -195,7 +195,7 @@ class GFPGan(DSSO_MODEL):
 
             cv2.imwrite(save_restore_path_resized, output_resized)
 
-            output_map["image1"] = Image.open(save_restore_path_resized)
+            output_map["image1"] = save_restore_path_resized
             output_map["image2"] = output_map["image1"]
 
             return output_map

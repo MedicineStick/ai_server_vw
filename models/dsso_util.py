@@ -14,17 +14,21 @@ import requests
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
-def format_number(num):
-    return f"/{num:05}.jpg"
-
+import hmac
+import hashlib
+import base64
 import cv2
 import requests
 import numpy as np
 from io import BytesIO
+import mimetypes
 import re
 import json
 from moviepy import VideoFileClip, concatenate_videoclips
+import time
+from urllib.parse import quote
+def format_number(num):
+    return f"/{num:05}.jpg"
 
 def cut_and_concatenate_video(input_video_path, timestamp_list, output_video_path):
 
@@ -346,6 +350,57 @@ def bytes_from_audio_tensor(audio_tensor:torch.Tensor, sample_rate=44100, format
 # audio_bytes = bytes_from_audio_tensor(audio_tensor)
 
 
+class OBS_Uploader:
+    def __init__(self):
+        pass
+
+    def get_obs_v2_signature(self,access_key, secret_key, method, bucket, object_key, content_type, date_str):
+        canonical_string = f"{method}\n\n{content_type}\n{date_str}\n/{bucket}/{object_key}"
+        signature = hmac.new(secret_key.encode(), canonical_string.encode(), hashlib.sha1).digest()
+        signature_b64 = base64.b64encode(signature).decode()
+        return f"OBS {access_key}:{signature_b64}"
+
+    def upload(self, file_path: str) -> dict:
+        if not os.path.isfile(file_path):
+            return  f"File not found: {file_path}"
+
+        # === Get file name and binary data ===
+        file_name = os.path.basename(file_path)
+        with open(file_path, "rb") as f:
+            binary_data = f.read()
+
+        # === Guess content type ===
+        content_type, _ = mimetypes.guess_type(file_name)
+        if content_type is None:
+            return "Unsupported or unknown file type"
+
+        # === OBS Config ===
+        access_key = ''
+        secret_key = ''
+        bucket = 'obs-itpai-cdn-dev'
+        region = 'cn-north-4'
+        object_key = f"ai-sandbox-web/static/{file_name}"
+        date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
+
+        # === Generate Signature ===
+        signature = self.get_obs_v2_signature(access_key, secret_key, 'PUT', bucket, object_key, content_type, date_str)
+
+        # === Upload File ===
+        upload_url = f"http://{bucket}.obs.{region}.myhuaweicloud.com/{quote(object_key)}"
+        headers = {
+            'Authorization': signature,
+            'Date': date_str,
+            'Content-Type': content_type
+        }
+
+        response = requests.put(upload_url, headers=headers, data=binary_data)
+
+        if response.status_code == 200:
+            custom_url = f"http://static.vertex.vgcserv.com.cn/ai-sandbox-web/static/{file_name}"
+            return custom_url
+        else:
+            return  f"Upload failed: {response.status_code} - {response.text}"
+
 class CosUploader:
     def __init__(self,mode:int):
         secret_id = None
@@ -354,11 +409,11 @@ class CosUploader:
         if mode ==0:
             secret_id = ""
             secret_key = ""
-            self.bucket = ''
+            self.bucket = 'inno-project1-1316407986'
         else:
             secret_id = ''
             secret_key = ''
-            self.bucket=''
+            self.bucket='dsso-di-icp-prod-1322412301'
 
         region = 'ap-shanghai'
         token = None
@@ -393,77 +448,77 @@ class CosUploader:
                 logging.error(f"failed to upload image: {e}")
         return ""
     
-    def upload_audio(self, audio, sample_rate:int=16000 ,key: str = None) -> str:
-        if key is None:
-            import uuid
-            key = str(uuid.uuid4()) + '.wav'
-        if len(self.prefix) > 0:
-            key = os.path.join(self.prefix, key)
-        from qcloud_cos.cos_exception import CosClientError, CosServiceError
+def upload_audio(self, audio, sample_rate:int=16000 ,key: str = None) -> str:
+    if key is None:
+        import uuid
+        key = str(uuid.uuid4()) + '.wav'
+    if len(self.prefix) > 0:
+        key = os.path.join(self.prefix, key)
+    from qcloud_cos.cos_exception import CosClientError, CosServiceError
 
-        # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
-        for i in range(0, 10):
-            try:
-                response = self.client.put_object(
-                    Bucket=self.bucket,
-                    Body=bytes_from_audio_file(audio),
-                    Key=key)
-                url = self.client.get_object_url(
-                    Bucket=self.bucket,
-                    Key=key,
-                )
-                return url
-            except (CosClientError, CosServiceError) as e:
-                logging.error(f"failed to upload image: {e}")
-        return ""
+    # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
+    for i in range(0, 10):
+        try:
+            response = self.client.put_object(
+                Bucket=self.bucket,
+                Body=bytes_from_audio_file(audio),
+                Key=key)
+            url = self.client.get_object_url(
+                Bucket=self.bucket,
+                Key=key,
+            )
+            return url
+        except (CosClientError, CosServiceError) as e:
+            logging.error(f"failed to upload image: {e}")
+    return ""
 
-    def upload_video(self, video ,key: str = None) -> str:
-        if key is None:
-            import uuid
-            key = str(uuid.uuid4()) + '.mp4'
-        if len(self.prefix) > 0:
-            key = os.path.join(self.prefix, key)
-        from qcloud_cos.cos_exception import CosClientError, CosServiceError
+def upload_video(self, video ,key: str = None) -> str:
+    if key is None:
+        import uuid
+        key = str(uuid.uuid4()) + '.mp4'
+    if len(self.prefix) > 0:
+        key = os.path.join(self.prefix, key)
+    from qcloud_cos.cos_exception import CosClientError, CosServiceError
 
-        # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
-        for i in range(0, 10):
-            try:
-                response = self.client.put_object(
-                    Bucket=self.bucket,
-                    Body=bytes_from_video_file(video),
-                    Key=key)
-                url = self.client.get_object_url(
-                    Bucket=self.bucket,
-                    Key=key,
-                )
-                return url
-            except (CosClientError, CosServiceError) as e:
-                logging.error(f"failed to upload image: {e}")
-        return ""
-    
-    def upload_file(self, file_temp:str ,key: str = None) -> str:
+    # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
+    for i in range(0, 10):
+        try:
+            response = self.client.put_object(
+                Bucket=self.bucket,
+                Body=bytes_from_video_file(video),
+                Key=key)
+            url = self.client.get_object_url(
+                Bucket=self.bucket,
+                Key=key,
+            )
+            return url
+        except (CosClientError, CosServiceError) as e:
+            logging.error(f"failed to upload image: {e}")
+    return ""
 
-        extension = file_temp[file_temp.rfind('.'):]
-        if key is None:
-            import uuid
-            key = str(uuid.uuid4()) + extension
-        if len(self.prefix) > 0:
-            key = os.path.join(self.prefix, key)
-        from qcloud_cos.cos_exception import CosClientError, CosServiceError
+def upload_file(self, file_temp:str ,key: str = None) -> str:
 
-        # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
-        for i in range(0, 10):
-            try:
-                response = self.client.put_object(
-                    Bucket=self.bucket,
-                    Body=bytes_from_file(file_temp),
-                    Key=key)
-                url = self.client.get_object_url(
-                    Bucket=self.bucket,
-                    Key=key,
-                )
-                return url
-            except (CosClientError, CosServiceError) as e:
-                logging.error(f"failed to upload image: {e}")
-        return ""
+    extension = file_temp[file_temp.rfind('.'):]
+    if key is None:
+        import uuid
+        key = str(uuid.uuid4()) + extension
+    if len(self.prefix) > 0:
+        key = os.path.join(self.prefix, key)
+    from qcloud_cos.cos_exception import CosClientError, CosServiceError
+
+    # 使用高级接口断点续传，失败重试时不会上传已成功的分块(这里重试10次)
+    for i in range(0, 10):
+        try:
+            response = self.client.put_object(
+                Bucket=self.bucket,
+                Body=bytes_from_file(file_temp),
+                Key=key)
+            url = self.client.get_object_url(
+                Bucket=self.bucket,
+                Key=key,
+            )
+            return url
+        except (CosClientError, CosServiceError) as e:
+            logging.error(f"failed to upload image: {e}")
+    return ""
 

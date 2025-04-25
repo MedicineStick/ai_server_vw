@@ -57,12 +57,10 @@ class ESRGan(DSSO_MODEL):
                 print('Error', error)
                 print('If you encounter CUDA out of memory, try to set --tile with a smaller number.')
             else:
+                save_restore_path_resized = "./temp/esrgan_out.png"
                 output_resized = cv2.resize(output,(W,H))
-                output_rgb = cv2.cvtColor(output_resized, cv2.COLOR_BGR2RGB)
-                pillow_image1 = Image.fromarray(output_rgb)
-                output_rgb = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
-                pillow_image2 = Image.fromarray(output_rgb)
-                output_map["image1"] = pillow_image1
-                output_map["image2"] = pillow_image2
+                cv2.imwrite(save_restore_path_resized, output_resized)
+                output_map["image1"] = save_restore_path_resized
+                output_map["image2"] = save_restore_path_resized
             torch.cuda.empty_cache()
             return output_map

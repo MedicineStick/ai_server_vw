@@ -2,7 +2,7 @@ from typing import Dict
 from myapp.dsso_server import DSSO_SERVER 
 from models.server_conf import ServerConfig
 from models.dsso_model import DSSO_MODEL
-from models.dsso_util import CosUploader
+from models.dsso_util import CosUploader,OBS_Uploader
 import concurrent.futures.thread
 import asyncio
 class Super_Resolution(DSSO_SERVER):
@@ -10,7 +10,7 @@ class Super_Resolution(DSSO_SERVER):
             self,
             conf:ServerConfig,
             model:DSSO_MODEL,
-            uploader:CosUploader,
+            uploader:CosUploader|OBS_Uploader,
             executor:concurrent.futures.thread.ThreadPoolExecutor,
             time_blocker:int
             ):
@@ -37,7 +37,7 @@ class Super_Resolution(DSSO_SERVER):
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
         output = self.model.predict_func_delay(image_url = request["image_url"])
-        url1 = self.uploader.upload_image(output["image1"])
+        url1 = self.uploader.upload(output["image1"])
         #url2 = self.uploader.upload_image(output["image2"])
         output_map["output_image_url"] = url1
         output_map["download_url"] = url1
