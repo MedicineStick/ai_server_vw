@@ -11,7 +11,8 @@ class OCR(DSSO_SERVER):
     def __init__(
             self,
             conf:ServerConfig,
-            model:DSSO_MODEL,
+            img_model:DSSO_MODEL,
+            pdf_model:DSSO_MODEL,
             executor:concurrent.futures.thread.ThreadPoolExecutor,
             time_blocker:int
             ):
@@ -19,7 +20,8 @@ class OCR(DSSO_SERVER):
         print("--->initialize OCR...")
         self.executor = executor
         self.conf = conf
-        self.model = model
+        self.img_model = img_model
+        self.pdf_model = pdf_model
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -34,7 +36,10 @@ class OCR(DSSO_SERVER):
     
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
-        output = self.model.predict_func_delay(image_url = request["image_url"])
+        if request["image_url"].endswith('.pdf'):
+            output = self.pdf_model.predict_func_delay(image_url = request["image_url"])
+        elif request["image_url"].endswith('.jpg') or request["image_url"].endswith('.png'):
+            output = self.img_model.predict_func_delay(image_url = request["image_url"])
         output_map.update(output)
         output_map['state'] = 'finished'
         return output_map

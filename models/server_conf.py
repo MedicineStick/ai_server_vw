@@ -132,6 +132,10 @@ class ServerConfig:
         self.jumpcutter_output = config["jumpcutter_output"]
 
         self.funclip_asr_beamsize = config["funclip_asr_beamsize"]
+        self.olmocr_python_path = config["olmocr_python_path"]
+        self.olmocr_project_path = config["olmocr_project_path"]
+        self.olmocr_device_id = config["olmocr_device_id"]
+        self.olmocr_package_path = config["olmocr_package_path"]
 
 
 

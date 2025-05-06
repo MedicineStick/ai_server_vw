@@ -156,6 +156,14 @@ jumpcutter_output : "./temp/jumpcutter-master/video/"
 
 funclip_asr_beamsize : 8
 
+olmocr_python_path : "/home/tione/notebook/lskong2/softwares1/anaconda3/envs/chatbot/bin/"
+
+olmocr_project_path : "third_party/olmocr/"
+
+olmocr_package_path : "/home/tione/notebook/lskong2/softwares1/anaconda3/envs/chatbot/lib/python3.12/site-packages/"
+
+olmocr_device_id : 5
+
 
 
 

@@ -51,7 +51,9 @@ from models.esr_gan import ESRGan
 from models.gfp_gan import GFPGan
 from models.silero_vad import Silero_VAD
 from models.dsso_llm import DssoLLM
+from models.pdf_ocr_model import PDF_OCR_Model
 from models.dsso_util import CosUploader,OBS_Uploader
+from models.img_ocr_model import IMG_OCR_Model
 
 class WebSocketServer:
     def __init__(self,
@@ -80,6 +82,8 @@ class WebSocketServer:
             "DssoLLM":DssoLLM(global_conf),
             "uploader":CosUploader(global_conf.cos_uploader_mode),
             "obs_uploader":OBS_Uploader(),
+            "pdf_ocr_model":PDF_OCR_Model(global_conf),
+            "img_ocr_model":IMG_OCR_Model(global_conf),
             }
         self.project_name_dict = {
                 "warning_light_detection":warning_light_detection(
@@ -145,9 +149,18 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker,
                     ),
-                "sam1":Sam1(global_conf,
-                            executor=self.executor,
-                            time_blocker=global_conf.time_blocker),
+                "sam1":Sam1(
+                    global_conf,
+                    executor=self.executor,
+                    time_blocker=global_conf.time_blocker
+                    ),
+                "ocr":OCR(
+                    conf=global_conf,
+                    img_model=model_dict["img_ocr_model"],
+                    pdf_model=model_dict["pdf_ocr_model"],
+                    executor=self.executor,
+                    time_blocker=global_conf.time_blocker
+                    ),
                 }
 
     """
