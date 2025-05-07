@@ -159,6 +159,7 @@ class WebSocketServer:
                     img_model=model_dict["img_ocr_model"],
                     pdf_model=model_dict["pdf_ocr_model"],
                     executor=self.executor,
+                    uploader=model_dict["obs_uploader"],
                     time_blocker=global_conf.time_blocker
                     ),
                 }

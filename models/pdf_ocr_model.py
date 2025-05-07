@@ -36,15 +36,39 @@ class PDF_OCR_Model(DSSO_MODEL):
         env["PATH"] = self.conf.olmocr_python_path.strip() +':'+ env["PATH"]
         env["PYTHONPATH"] = self.conf.olmocr_package_path
 
-        cmd = "cd "+self.conf.olmocr_project_path+"; CUDA_VISIBLE_DEVICES="+str(self.conf.olmocr_device_id)+'  '+self.conf.olmocr_python_path.strip()+"/python3  -m olmocr.pipeline ./localworkspace --pdfs "+relative_path
+        result_path1 = "./localworkspace"
+        result_path2 = os.path.join(self.conf.olmocr_project_path, result_path1+"/results")
+        result_path3 = os.path.join(self.conf.olmocr_project_path, "dolma_previews")
+
+        for filename in os.listdir(result_path2):
+            file_path = os.path.join(result_path2, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        for filename in os.listdir(result_path3):
+            file_path = os.path.join(result_path3, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        cmd = "cd "+self.conf.olmocr_project_path+"; CUDA_VISIBLE_DEVICES="+str(self.conf.olmocr_device_id)+'  '+self.conf.olmocr_python_path.strip()+"/python3  -m olmocr.pipeline "+result_path1+" --pdfs "+relative_path
         print(cmd)
+
         subprocess.run(
                         [cmd],
                         shell=True,
                         env=env
                     )
 
-        return {"result": []}
+        cmd = "cd "+self.conf.olmocr_project_path+"; CUDA_VISIBLE_DEVICES="+str(self.conf.olmocr_device_id)+'  '+self.conf.olmocr_python_path.strip()+"/python3  -m olmocr.viewer.dolmaviewer  localworkspace/results/output_*.jsonl"
+        print(cmd)
+
+        subprocess.run(
+                        [cmd],
+                        shell=True,
+                        env=env
+                    )
+
+        result_path = os.path.join(self.conf.olmocr_project_path, "dolma_previews/tests_gnarly_pdfs_horribleocr_pdf.html")
+
+        return {"result": result_path}
 
         
         

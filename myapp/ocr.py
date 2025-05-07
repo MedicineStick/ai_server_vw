@@ -2,7 +2,7 @@ from typing import Dict
 from myapp.dsso_server import DSSO_SERVER 
 from models.server_conf import ServerConfig
 from models.dsso_model import DSSO_MODEL
-from models.dsso_util import CosUploader
+from models.dsso_util import CosUploader,OBS_Uploader
 import concurrent.futures.thread
 import asyncio
 
@@ -13,6 +13,7 @@ class OCR(DSSO_SERVER):
             conf:ServerConfig,
             img_model:DSSO_MODEL,
             pdf_model:DSSO_MODEL,
+            uploader:OBS_Uploader,
             executor:concurrent.futures.thread.ThreadPoolExecutor,
             time_blocker:int
             ):
@@ -22,6 +23,7 @@ class OCR(DSSO_SERVER):
         self.conf = conf
         self.img_model = img_model
         self.pdf_model = pdf_model
+        self.uploader = uploader
         
     def dsso_reload_conf(self,conf:ServerConfig):
         self.conf = conf
@@ -38,6 +40,7 @@ class OCR(DSSO_SERVER):
         output_map = {}
         if request["image_url"].endswith('.pdf'):
             output = self.pdf_model.predict_func_delay(image_url = request["image_url"])
+            output_map["result"] = self.uploader.upload(output["result"])
         elif request["image_url"].endswith('.jpg') or request["image_url"].endswith('.png'):
             output = self.img_model.predict_func_delay(image_url = request["image_url"])
         output_map.update(output)
