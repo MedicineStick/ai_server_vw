@@ -40,9 +40,9 @@ class OCR(DSSO_SERVER):
         output_map = {}
         if request["image_url"].endswith('.pdf'):
             output = self.pdf_model.predict_func_delay(image_url = request["image_url"])
-            output_map["result"] = self.uploader.upload(output["result"])
         elif request["image_url"].endswith('.jpg') or request["image_url"].endswith('.png'):
             output = self.img_model.predict_func_delay(image_url = request["image_url"])
-        output_map.update(output)
+        output_map["result"] = self.uploader.upload(output["result"])
         output_map['state'] = 'finished'
+        print("OCR finished",output_map["result"])
         return output_map
