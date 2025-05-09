@@ -21,7 +21,8 @@ from myapp.realtime_asr_whisper_silero_vad import Realtime_ASR_Whisper_Silero_Va
 print("--->Loading Sam1...")
 from myapp.sam1 import Sam1
 print("--->Loading ocr...")
-from myapp.ocr import OCR
+from myapp.img_ocr import IMG_OCR
+from myapp.pdf_ocr import PDF_OCR
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 #print("--->Loading Motion_Clone...")
@@ -154,9 +155,15 @@ class WebSocketServer:
                     executor=self.executor,
                     time_blocker=global_conf.time_blocker
                     ),
-                "ocr":OCR(
+                "img_ocr":IMG_OCR(
                     conf=global_conf,
                     img_model=model_dict["img_ocr_model"],
+                    executor=self.executor,
+                    uploader=model_dict["obs_uploader"],
+                    time_blocker=global_conf.time_blocker
+                    ),
+                "pdf_ocr":PDF_OCR(
+                    conf=global_conf,
                     pdf_model=model_dict["pdf_ocr_model"],
                     executor=self.executor,
                     uploader=model_dict["obs_uploader"],

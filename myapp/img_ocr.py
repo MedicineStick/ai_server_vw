@@ -7,12 +7,11 @@ import concurrent.futures.thread
 import asyncio
 
 
-class OCR(DSSO_SERVER):
+class IMG_OCR(DSSO_SERVER):
     def __init__(
             self,
             conf:ServerConfig,
             img_model:DSSO_MODEL,
-            pdf_model:DSSO_MODEL,
             uploader:OBS_Uploader,
             executor:concurrent.futures.thread.ThreadPoolExecutor,
             time_blocker:int
@@ -22,7 +21,6 @@ class OCR(DSSO_SERVER):
         self.executor = executor
         self.conf = conf
         self.img_model = img_model
-        self.pdf_model = pdf_model
         self.uploader = uploader
         
     def dsso_reload_conf(self,conf:ServerConfig):
@@ -38,11 +36,13 @@ class OCR(DSSO_SERVER):
     
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
-        if request["image_url"].endswith('.pdf'):
-            output = self.pdf_model.predict_func_delay(image_url = request["image_url"])
-        elif request["image_url"].endswith('.jpg') or request["image_url"].endswith('.png'):
+        if request["image_url"].endswith('.jpg') or request["image_url"].endswith('.png'):
             output = self.img_model.predict_func_delay(image_url = request["image_url"])
-        output_map["result"] = self.uploader.upload(output["result"])
-        output_map['state'] = 'finished'
-        print("OCR finished",output_map["result"])
+            output_map["result"] = self.uploader.upload(output["result"])
+            output_map['state'] = 'finished'
+            print("OCR finished",output_map["result"])
+        else:
+            output_map['state'] = 'error'
+            output_map['message'] = 'Unsupported file type. Please upload a .jpg or .png image.'
+            print("OCR error", output_map["message"])
         return output_map

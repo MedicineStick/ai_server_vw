@@ -1036,7 +1036,7 @@ async def motion_clone():
 
 async def ocr():
 
-    data = {"project_name":"ocr","image_url":"./temp/demo/0.png"}
+    data = {"project_name":"img_ocr","image_url":"./temp/demo/0.png"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     async with websockets.connect(WS_URL) as websocket:
         await websocket.send(encoded_data)
@@ -1045,7 +1045,7 @@ async def ocr():
 
 async def ocr_pdf():
 
-    data = {"project_name":"ocr","image_url":"./temp/omni.pdf"}
+    data = {"project_name":"pdf_ocr","image_url":"./temp/omni.pdf"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     async with websockets.connect(WS_URL) as websocket:
         await websocket.send(encoded_data)
