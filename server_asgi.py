@@ -23,6 +23,7 @@ from myapp.sam1 import Sam1
 print("--->Loading ocr...")
 from myapp.img_ocr import IMG_OCR
 from myapp.pdf_ocr import PDF_OCR
+from myapp.pdf_ocr_v2 import PDF_OCR_V2
 print("--->Loading Realtime_ASR_Whisper_Silero_Vad_Chatbot...")
 from myapp.realtime_asr_whisper_silero_vad_chatbot import Realtime_ASR_Whisper_Silero_Vad_Chatbot
 #print("--->Loading Motion_Clone...")
@@ -55,6 +56,8 @@ from models.dsso_llm import DssoLLM
 from models.pdf_ocr_model import PDF_OCR_Model
 from models.dsso_util import CosUploader,OBS_Uploader
 from models.img_ocr_model import IMG_OCR_Model
+from models.pdf_ocr_model_v2 import PDF_OCR_Model_V2
+
 
 class WebSocketServer:
     def __init__(self,
@@ -85,6 +88,7 @@ class WebSocketServer:
             "obs_uploader":OBS_Uploader(),
             "pdf_ocr_model":PDF_OCR_Model(global_conf),
             "img_ocr_model":IMG_OCR_Model(global_conf),
+            "pdf_ocr_model_v2":PDF_OCR_Model_V2(global_conf),
             }
         self.project_name_dict = {
                 "warning_light_detection":warning_light_detection(
@@ -165,6 +169,13 @@ class WebSocketServer:
                 "pdf_ocr":PDF_OCR(
                     conf=global_conf,
                     pdf_model=model_dict["pdf_ocr_model"],
+                    executor=self.executor,
+                    uploader=model_dict["obs_uploader"],
+                    time_blocker=global_conf.time_blocker
+                    ),
+                "pdf_ocr_v2":PDF_OCR_V2(
+                    conf=global_conf,
+                    img_model=model_dict["img_ocr_model"],
                     executor=self.executor,
                     uploader=model_dict["obs_uploader"],
                     time_blocker=global_conf.time_blocker

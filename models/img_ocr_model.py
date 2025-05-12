@@ -48,11 +48,9 @@ class IMG_OCR_Model(DSSO_MODEL):
         result = result[0]
         if result is None:
             return {"result": []}
-        txts1 = [line[1][0]+"        "+ str(round(line[1][1], 3)) for line in result]
-        html_path = "temp/ocr/result.html"
-        self.strlist_2_html_file(txts1, html_path)
+        txts1 = [line[1][0] for line in result]
 
-        return {"result": html_path}
+        return {"result": txts1}
         
         
 

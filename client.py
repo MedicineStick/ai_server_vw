@@ -1045,7 +1045,16 @@ async def ocr():
 
 async def ocr_pdf():
 
-    data = {"project_name":"pdf_ocr","image_url":"./temp/omni.pdf"}
+    data = {"project_name":"pdf_ocr","image_url":"./temp/deep_seek_r1.pdf"}
+    encoded_data = json.dumps(data) #.encode("utf-8")
+    async with websockets.connect(WS_URL) as websocket:
+        await websocket.send(encoded_data)
+        response = await websocket.recv()
+        print(f"Received from server: {response}")
+
+async def ocr_pdf_v2():
+
+    data = {"project_name":"pdf_ocr_v2","image_url":"./temp/deep_seek_r1.pdf"}
     encoded_data = json.dumps(data) #.encode("utf-8")
     async with websockets.connect(WS_URL) as websocket:
         await websocket.send(encoded_data)
@@ -1138,12 +1147,36 @@ def test2():
         base = base*(1+rate)+addition
     print(base)
 
+import pdfplumber
+
+def pdf_to_html(pdf_path, html_path):
+    html_content = "<html><head><meta charset='UTF-8'><title>PDF to HTML</title></head><body>\n"
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                # Escape HTML-sensitive characters and preserve line breaks
+                html_page = "<div style='margin-bottom: 20px; white-space: pre-wrap;'>\n"
+                html_page += text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                html_page += "\n</div>\n"
+                html_content += html_page
+
+    html_content += "</body></html>"
+
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+# Example usage
+
+
+
 if __name__ =="__main__":
 
 
     if len(sys.argv)<2:
         #test_audiofromvideo()
-        test2()
+        pdf_to_html("./temp/ocr/omni.pdf", "./temp/ocr/test0512/omni.html")
         #asyncio.run(fun_clip_step2())
         #vits_conversion()
     elif int(sys.argv[1]) == 1:
@@ -1205,6 +1238,8 @@ if __name__ =="__main__":
         asyncio.run(ocr())
     elif int(sys.argv[1]) == 29:
         asyncio.run(ocr_pdf())
+    elif int(sys.argv[1]) == 30:
+        asyncio.run(ocr_pdf_v2())
 
 
 
