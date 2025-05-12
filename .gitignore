@@ -1,6 +1,7 @@
 temp/results/ai_meeting_results/
 myapp/__pycache__/
 logs/
+third_party/GFPGAN/
 temp/
 checkpoints/
 node_modules/

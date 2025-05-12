@@ -42,12 +42,16 @@ class PDF_OCR_Model(DSSO_MODEL):
 
         for filename in os.listdir(result_path2):
             file_path = os.path.join(result_path2, filename)
+            print("cleaning up: ",file_path)
             if os.path.isfile(file_path):
                 os.remove(file_path)
+                print("removed: ",file_path)
         for filename in os.listdir(result_path3):
             file_path = os.path.join(result_path3, filename)
+            print("cleaning up: ",file_path)
             if os.path.isfile(file_path):
                 os.remove(file_path)
+                print("removed: ",file_path)
         cmd = "cd "+self.conf.olmocr_project_path+"; CUDA_VISIBLE_DEVICES="+str(self.conf.olmocr_device_id)+'  '+self.conf.olmocr_python_path.strip()+"/python3  -m olmocr.pipeline "+result_path1+" --pdfs "+relative_path
         print(cmd)
 
