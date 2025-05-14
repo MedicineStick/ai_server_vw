@@ -75,7 +75,8 @@ class PDF_OCR_V2(DSSO_SERVER):
         img_path = "./temp/ocr/"
         img_name = input_image[input_image.rfind('/') + 1:]
         saved_path = os.path.join(img_path,img_name)
-        html_path = os.path.join(img_path,img_name[:img_name.rfind('.')]+".html")
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        html_path = os.path.join(img_path,current_time+request["task_id"]+".html")
         if 'http' in input_image:
                 urllib.request.urlretrieve(input_image,saved_path)
         else:

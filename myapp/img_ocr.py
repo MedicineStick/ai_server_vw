@@ -5,7 +5,7 @@ from models.dsso_model import DSSO_MODEL
 from models.dsso_util import CosUploader,OBS_Uploader
 import concurrent.futures.thread
 import asyncio
-
+import datetime
 
 class IMG_OCR(DSSO_SERVER):
     def __init__(
@@ -49,9 +49,10 @@ class IMG_OCR(DSSO_SERVER):
 
     def dsso_forward(self, request: Dict) -> Dict:
         output_map = {}
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         if request["image_url"].endswith('.jpg') or request["image_url"].endswith('.png'):
             output = self.img_model.predict_func_delay(image_url = request["image_url"])
-            html_path = "temp/ocr/result.html"
+            html_path = f"temp/ocr/{current_time}.html"
             self.strlist_2_html_file(output["result"], html_path)
             output_map["html_path"] = self.uploader.upload(html_path)
             output_map["result"] = '\n'.join(output["result"])
