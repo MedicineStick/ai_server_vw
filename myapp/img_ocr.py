@@ -53,9 +53,10 @@ class IMG_OCR(DSSO_SERVER):
             output = self.img_model.predict_func_delay(image_url = request["image_url"])
             html_path = "temp/ocr/result.html"
             self.strlist_2_html_file(output["result"], html_path)
-            output_map["result"] = self.uploader.upload(html_path)
+            output_map["html_path"] = self.uploader.upload(html_path)
+            output_map["result"] = '\n'.join(output["result"])
             output_map['state'] = 'finished'
-            print("OCR finished",output_map["result"])
+            print("OCR finished",output_map["html_path"])
         else:
             output_map['state'] = 'error'
             output_map['message'] = 'Unsupported file type. Please upload a .jpg or .png image.'
