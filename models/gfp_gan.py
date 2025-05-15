@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 import os
 import shutil
-import glob
+import datetime
 from basicsr.utils import imwrite
 
 from third_party.GFPGAN.gfpgan import GFPGANer
@@ -69,6 +69,7 @@ class GFPGan(DSSO_MODEL):
             args = GFPgan_args()
             args.upscale = self.conf.super_resolution_outscale
             args.input = saved_path
+            args.suffix = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
             os.makedirs(args.output, exist_ok=True)
 
             # ------------------------ set up background upsampler ------------------------
