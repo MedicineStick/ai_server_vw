@@ -24,7 +24,7 @@ warning_light_detection_class_num : 43
 super_resolution_mem : 1500
 super_resolution_tile_pad : 10
 super_resolution_pre_pad : 10
-super_resolution_outscale : 2
+super_resolution_outscale : 4
 super_resolution_tile : 200
 super_resolution_netscale : 4
 super_resolution_path : "./checkpoints/SR/RealESRGAN_x4plus.pth"

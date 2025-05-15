@@ -42,5 +42,6 @@ class Super_Resolution(DSSO_SERVER):
         output_map["output_image_url"] = url1
         output_map["download_url"] = url1
         output_map['state'] = 'finished'
+        print("Super_Resolution finished",output_map)
         return output_map
  
