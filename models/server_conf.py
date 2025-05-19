@@ -137,6 +137,8 @@ class ServerConfig:
         self.olmocr_device_id = config["olmocr_device_id"]
         self.olmocr_package_path = config["olmocr_package_path"]
 
+        self.ocr_line_bias = config["ocr_line_bias"]
+
 
 
         

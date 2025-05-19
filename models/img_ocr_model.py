@@ -14,7 +14,7 @@ class IMG_OCR_Model(DSSO_MODEL):
         device = torch.device(conf.gpu_id)
         self.if_available = True
         self.conf = conf
-        self.ocr = PaddleOCR(use_angle_cls=True, lang="ch") 
+        self.ocr = PaddleOCR(use_angle_cls=True) 
     
     def strlist_2_html_file(
             self,
@@ -48,9 +48,30 @@ class IMG_OCR_Model(DSSO_MODEL):
         result = result[0]
         if result is None:
             return {"result": []}
-        txts1 = [line[1][0] for line in result]
+        text_list = []
+        last_coordinates = None
+        for line in result:
+        # line[0] is the box coordinates
+        # line[1][0] is the text
+        # line[1][1] is the score
+        # print(line[0])
+        # print(line[1][0])
+        # print(line[1][1])
+            if last_coordinates is None:
+                last_coordinates = line[0]
+            else:
+                # Check if the current coordinates are the same as the last coordinates
+                bias = last_coordinates[0][1]/line[0][0][1]
+                if bias> self.conf.ocr_line_bias:
+                    if text_list:
+                        text_list[-1]+=f" {line[1][0]}"
+                    else:
+                        text_list.append(line[1][0])
+                else:
+                    text_list.append(line[1][0])
+                last_coordinates = line[0]
 
-        return {"result": txts1}
+        return {"result": text_list}
         
         
 

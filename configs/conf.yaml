@@ -165,6 +165,9 @@ olmocr_package_path : "/home/tione/notebook/lskong2/softwares1/anaconda3/envs/ch
 olmocr_device_id : 5
 
 
+ocr_line_bias : 0.9
+
+
 
 
 
